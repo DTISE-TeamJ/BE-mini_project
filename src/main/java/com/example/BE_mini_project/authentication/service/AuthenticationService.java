@@ -20,6 +20,8 @@ import com.example.BE_mini_project.authentication.model.Roles;
 import com.example.BE_mini_project.authentication.dto.LoginResponseDTO;
 import com.example.BE_mini_project.authentication.repository.RolesRepository;
 import com.example.BE_mini_project.authentication.repository.UsersRepository;
+import java.security.SecureRandom;
+
 
 @Service
 @Transactional
@@ -65,6 +67,7 @@ public class AuthenticationService {
 
         String encodedPassword = passwordEncoder.encode(password);
         Set<Roles> authorities = new HashSet<>();
+        boolean isAdmin = false;
 
         if (email.toLowerCase().contains("@admin")) {
             var adminRole = rolesRepository.findByAuthority("ADMIN");
@@ -75,6 +78,7 @@ public class AuthenticationService {
                 rolesRepository.save(defaultAdminRole);
                 authorities.add(defaultAdminRole);
             }
+            isAdmin = true;
         } else {
             var userRole = rolesRepository.findByAuthority("USER");
             if (userRole.isPresent()) {
@@ -92,7 +96,49 @@ public class AuthenticationService {
         newUser.setPassword(encodedPassword);
         newUser.setAuthorities(authorities);
 
-        return usersRepository.save(newUser);
+        if (!isAdmin) {
+            String referralCode = generateReferralCode(newUserDto.getUsername());
+            newUser.setReferralCode(referralCode);
+        }
+
+        newUser = usersRepository.save(newUser);
+
+// //        limit only 50
+//        if (!isAdmin && newUserDto.getReferralCode() != null) {
+//            Optional<Users> referrerOptional = usersRepository.findByReferralCode(newUserDto.getReferralCode());
+//            if (referrerOptional.isPresent()) {
+//                Users referrer = referrerOptional.get();
+//                if (referrer.getPoint() < 50) { // Limit referral usage to 5 times (10 points each)
+//                    referrer.setPoint(referrer.getPoint() + 10);
+//                    usersRepository.save(referrer);
+//                } else {
+//                    newUser.setReferralCode(null);
+//                    usersRepository.save(newUser);
+//                }
+//            }
+//        }
+
+        if (!isAdmin && newUserDto.getReferralCode() != null) {
+            Optional<Users> referrerOptional = usersRepository.findByReferralCode(newUserDto.getReferralCode());
+            if (referrerOptional.isPresent()) {
+                Users referrer = referrerOptional.get();
+                referrer.setPoint(referrer.getPoint() + 10);
+                usersRepository.save(referrer);
+            }
+        }
+
+        if (isAdmin) {
+            newUser.setReferralCode(null);
+        }
+
+        return usersRepository.findById(newUser.getId()).orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
+
+    private String generateReferralCode(String username) {
+        SecureRandom random = new SecureRandom();
+        int randomNumber = random.nextInt(10000);
+        return username.substring(0, Math.min(2, username.length())) + String.format("%04d", randomNumber);
     }
 
     public LoginResponseDTO loginUser(String identifier, String password) {
