@@ -7,6 +7,7 @@ import com.example.BE_mini_project.authentication.exception.AccountNotRegistered
 import com.example.BE_mini_project.authentication.helper.Claims;
 import com.example.BE_mini_project.authentication.repository.BlacklistAuthRedisRepository;
 import com.example.BE_mini_project.authentication.repository.UsersRepository;
+
 import com.example.BE_mini_project.response.CustomResponse;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -233,6 +234,7 @@ public class AuthenticationController {
         return ResponseEntity.ok().body(claims);
     }
     */
+
 
     /*
     @PostMapping("/redeem")

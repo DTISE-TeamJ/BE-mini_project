@@ -22,7 +22,6 @@ import com.example.BE_mini_project.authentication.repository.RolesRepository;
 import com.example.BE_mini_project.authentication.repository.UsersRepository;
 import java.security.SecureRandom;
 
-
 @Service
 @Transactional
 public class AuthenticationService {
@@ -95,6 +94,7 @@ public class AuthenticationService {
         newUser.setEmail(newUserDto.getEmail());
         newUser.setPassword(encodedPassword);
         newUser.setAuthorities(authorities);
+
 
         if (!isAdmin) {
             String referralCode = generateReferralCode(newUserDto.getUsername());

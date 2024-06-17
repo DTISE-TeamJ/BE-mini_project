@@ -6,10 +6,10 @@ public class RegistrationDTO {
     private String password;
     private String referralCode;
 
-
     public RegistrationDTO() {
         super();
     }
+
 
     public RegistrationDTO(String username, String email, String password, String referralCode) {
         super();
@@ -53,5 +53,6 @@ public class RegistrationDTO {
 
     public String toString() {
         return "Registration info: username: " + this.username + " email: " + this.email + " password: " + this.password + "referralCode: " + this.referralCode;
+      
     }
 }

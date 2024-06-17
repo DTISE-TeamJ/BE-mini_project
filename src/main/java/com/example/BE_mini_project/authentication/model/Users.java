@@ -82,6 +82,7 @@ public class Users implements UserDetails {
     }
 
     // Getters and Setters
+
     public Integer getId() {
         return Math.toIntExact(id);
     }
@@ -186,7 +187,7 @@ public class Users implements UserDetails {
             this.referralCode = UUID.randomUUID().toString();
         }
     }
-
+    
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return authorities;
