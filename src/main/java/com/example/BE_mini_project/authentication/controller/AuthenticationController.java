@@ -6,6 +6,8 @@ import com.example.BE_mini_project.authentication.exception.UsernameException;
 import com.example.BE_mini_project.authentication.exception.AccountNotRegisteredException;
 import com.example.BE_mini_project.authentication.helper.Claims;
 import com.example.BE_mini_project.authentication.repository.BlacklistAuthRedisRepository;
+import com.example.BE_mini_project.authentication.repository.UsersRepository;
+
 import com.example.BE_mini_project.response.CustomResponse;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -230,6 +232,21 @@ public class AuthenticationController {
 
         Map<String, Object> claims = jwtTokenProvider.getClaimsFromJwt(jwt);
         return ResponseEntity.ok().body(claims);
+    }
+    */
+
+
+    /*
+    @PostMapping("/redeem")
+    public ResponseEntity<String> redeemPoints(@RequestParam String username) {
+        Users user = usersRepository.findByUsername(username);
+        if (user.getPoint() >= 100) {
+            user.setPoint(user.getPoint() - 100);
+            usersRepository.save(user);
+            return ResponseEntity.ok("Discount applied");
+        } else {
+            return ResponseEntity.badRequest().body("Not enough points");
+        }
     }
     */
 

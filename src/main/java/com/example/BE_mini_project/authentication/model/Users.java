@@ -7,6 +7,7 @@ import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 @Entity
 @Table(name = "users")
@@ -81,8 +82,9 @@ public class Users implements UserDetails {
     }
 
     // Getters and Setters
-    public Long getId() {
-        return id;
+
+    public Integer getId() {
+        return Math.toIntExact(id);
     }
 
     public void setId(Long id) {
@@ -179,6 +181,13 @@ public class Users implements UserDetails {
         this.deletedAt = deletedAt;
     }
 
+    @PrePersist
+    public void prePersist() {
+        if (this.referralCode == null) {
+            this.referralCode = UUID.randomUUID().toString();
+        }
+    }
+    
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return authorities;
