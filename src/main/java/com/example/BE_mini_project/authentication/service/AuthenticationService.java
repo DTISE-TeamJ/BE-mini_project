@@ -4,10 +4,10 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import com.example.BE_mini_project.authentication.dto.RegistrationDTO;
-import com.example.BE_mini_project.authentication.exception.AccountNotRegisteredException;
-import com.example.BE_mini_project.authentication.exception.PasswordException;
-import com.example.BE_mini_project.authentication.exception.UsernameException;
-import com.example.BE_mini_project.authentication.repository.AuthRedisRepository;
+import com.example.BE_mini_project.authentication.exception.*;
+import com.example.BE_mini_project.authentication.model.Discount;
+import com.example.BE_mini_project.authentication.model.Point;
+import com.example.BE_mini_project.authentication.repository.*;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -18,8 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.BE_mini_project.authentication.model.Users;
 import com.example.BE_mini_project.authentication.model.Roles;
 import com.example.BE_mini_project.authentication.dto.LoginResponseDTO;
-import com.example.BE_mini_project.authentication.repository.RolesRepository;
-import com.example.BE_mini_project.authentication.repository.UsersRepository;
+
 import java.security.SecureRandom;
 
 @Service
@@ -38,15 +37,24 @@ public class AuthenticationService {
 
     private AuthRedisRepository authRedisRepository;
 
+    private PointRepository pointRepository;
+
+    private DiscountRepository discountRepository;
+
+
     public AuthenticationService(UsersRepository usersRepository, RolesRepository rolesRepository,
                                  PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager,
-                                 TokenService tokenService, AuthRedisRepository authRedisRepository) {
+                                 TokenService tokenService, AuthRedisRepository authRedisRepository,
+                                 PointRepository pointRepository, DiscountRepository discountRepository
+                                 ) {
         this.usersRepository = usersRepository;
         this.rolesRepository = rolesRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.tokenService = tokenService;
         this.authRedisRepository = authRedisRepository;
+        this.pointRepository = pointRepository;
+        this.discountRepository = discountRepository;
     }
 
     public Users registerUser(RegistrationDTO newUserDto) {
@@ -56,12 +64,12 @@ public class AuthenticationService {
         Optional<Users> userEmailOptional = usersRepository.findByEmail(email);
         Optional<Users> userUsernameOptional = usersRepository.findByUsername(newUserDto.getUsername());
 
-        if (userEmailOptional.isPresent()) {
-            throw new UsernameException("Email already exists, please choose another one !");
-        }
-
         if (userUsernameOptional.isPresent()) {
             throw new UsernameException("Username already exists, please choose another one !");
+        }
+
+        if (userEmailOptional.isPresent()) {
+            throw new EmailException("Email already exists, please choose another one !");
         }
 
         String encodedPassword = passwordEncoder.encode(password);
@@ -95,6 +103,9 @@ public class AuthenticationService {
         newUser.setPassword(encodedPassword);
         newUser.setAuthorities(authorities);
 
+        if (isAdmin) {
+            newUser.setReferralCode(null);
+        }
 
         if (!isAdmin) {
             String referralCode = generateReferralCode(newUserDto.getUsername());
@@ -105,12 +116,12 @@ public class AuthenticationService {
 
 // //        limit only 50
 //        if (!isAdmin && newUserDto.getReferralCode() != null) {
-//            Optional<Users> referrerOptional = usersRepository.findByReferralCode(newUserDto.getReferralCode());
-//            if (referrerOptional.isPresent()) {
-//                Users referrer = referrerOptional.get();
-//                if (referrer.getPoint() < 50) { // Limit referral usage to 5 times (10 points each)
-//                    referrer.setPoint(referrer.getPoint() + 10);
-//                    usersRepository.save(referrer);
+//            Optional<Users> inviterOptional = usersRepository.findByReferralCode(newUserDto.getReferralCode());
+//            if (inviterOptional.isPresent()) {
+//                Users inviter = inviterOptional.get();
+//                if (inviter.getPoint() < 50) { // Limit referral usage to 50 times (10 points each)
+//                    inviter.setPoint(inviter.getPoint() + 10000);
+//                    usersRepository.save(inviter);
 //                } else {
 //                    newUser.setReferralCode(null);
 //                    usersRepository.save(newUser);
@@ -118,17 +129,24 @@ public class AuthenticationService {
 //            }
 //        }
 
-        if (!isAdmin && newUserDto.getReferralCode() != null) {
-            Optional<Users> referrerOptional = usersRepository.findByReferralCode(newUserDto.getReferralCode());
-            if (referrerOptional.isPresent()) {
-                Users referrer = referrerOptional.get();
-                referrer.setPoint(referrer.getPoint() + 10);
-                usersRepository.save(referrer);
-            }
-        }
+        if (!isAdmin && newUserDto.getReferralCode() != null && !newUserDto.getReferralCode().trim().isEmpty()) {
+            Optional<Users> inviterOptional = usersRepository.findByReferralCode(newUserDto.getReferralCode());
+            if (inviterOptional.isPresent()) {
+                Users inviter = inviterOptional.get();
 
-        if (isAdmin) {
-            newUser.setReferralCode(null);
+                Discount newDiscount = new Discount();
+                newDiscount.setUser(newUser);
+                newDiscount.setHasDiscount(true);
+                discountRepository.save(newDiscount);
+
+                Point newPoint = new Point();
+                newPoint.setInvitee(newUser);
+                newPoint.setInviter(inviter);
+                newPoint.setPoints(10000);
+                pointRepository.save(newPoint);
+            } else {
+                throw new ReferralCodeException("Referral code is not valid!");
+            }
         }
 
         return usersRepository.findById(newUser.getId()).orElseThrow(() -> new RuntimeException("User not found"));

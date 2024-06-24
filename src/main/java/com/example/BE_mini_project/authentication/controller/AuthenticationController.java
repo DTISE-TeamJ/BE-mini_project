@@ -1,9 +1,6 @@
 package com.example.BE_mini_project.authentication.controller;
 
-import com.example.BE_mini_project.authentication.exception.EmailException;
-import com.example.BE_mini_project.authentication.exception.PasswordException;
-import com.example.BE_mini_project.authentication.exception.UsernameException;
-import com.example.BE_mini_project.authentication.exception.AccountNotRegisteredException;
+import com.example.BE_mini_project.authentication.exception.*;
 import com.example.BE_mini_project.authentication.helper.Claims;
 import com.example.BE_mini_project.authentication.repository.BlacklistAuthRedisRepository;
 import com.example.BE_mini_project.authentication.repository.UsersRepository;
@@ -60,6 +57,14 @@ public class AuthenticationController {
                     HttpStatus.BAD_REQUEST,
                     "Error",
                     "Email is already taken, please choose another one",
+                    null
+            );
+            return errorResponse.toResponseEntity();
+        } catch (ReferralCodeException e) {
+            CustomResponse<Users> errorResponse = new CustomResponse<>(
+                    HttpStatus.BAD_REQUEST,
+                    "Error",
+                    "Invalid referral code",
                     null
             );
             return errorResponse.toResponseEntity();
