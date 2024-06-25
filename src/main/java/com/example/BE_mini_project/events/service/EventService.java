@@ -1,5 +1,6 @@
 package com.example.BE_mini_project.events.service;
 
+import com.example.BE_mini_project.authentication.model.Users;
 import com.example.BE_mini_project.events.dto.CreateEventDTO;
 import com.example.BE_mini_project.events.dto.EventsDTO;
 import com.example.BE_mini_project.events.model.EventCategory;
@@ -9,12 +10,7 @@ import com.example.BE_mini_project.events.repository.EventRepository;
 import com.example.BE_mini_project.authentication.repository.UsersRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
-import com.cloudinary.Cloudinary;
-import com.cloudinary.utils.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
-import java.io.IOException;
-import org.springframework.stereotype.Service;
-
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -31,23 +27,22 @@ public class EventService {
     private UsersRepository usersRepository;
 
     private EventCategoryRepository eventCategoryRepository;
-    private final Cloudinary cloudinary;
+    private CloudinaryService cloudinaryService;
 
 
-    public EventService (EventRepository eventRepository, UsersRepository usersRepository, EventCategoryRepository eventCategoryRepository, Cloudinary cloudinary) {
+    public EventService (EventRepository eventRepository, UsersRepository usersRepository, EventCategoryRepository eventCategoryRepository, CloudinaryService cloudinaryService) {
         this.eventRepository = eventRepository;
         this.usersRepository = usersRepository;
         this.eventCategoryRepository = eventCategoryRepository;
-        this.cloudinary = cloudinary;
+        this.cloudinaryService = cloudinaryService;
     }
 
+    public EventsDTO createEvent(MultipartFile file, CreateEventDTO createEventDTO) {
+        // Cloudinary upload logic
+        Map<String, String> uploadResult = cloudinaryService.uploadFile(file);
+        String imageUrl = uploadResult.get("url");
 
-    public EventsDTO createEvent(CreateEventDTO createEventDTO, MultipartFile image) throws IOException {
-        // Upload image to Cloudinary
-        Map uploadResult = cloudinary.uploader().upload(image.getBytes(), ObjectUtils.emptyMap());
-        String imageUrl = (String) uploadResult.get("url");
-
-        // Create event and set properties
+        // Create event
         Events event = new Events();
         event.setName(createEventDTO.getName());
         event.setDate(Timestamp.valueOf(createEventDTO.getDate()));
@@ -59,12 +54,16 @@ public class EventService {
         event.setDescription(createEventDTO.getDescription());
         event.setIsFree(createEventDTO.isFree());
 
-        // Fetch and set EventCategory
+        // Fetch user and event category
+        Users user = usersRepository.findById(createEventDTO.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        event.setUser(user);
+
         EventCategory eventCategory = eventCategoryRepository.findById(createEventDTO.getEventCategoryId())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid event category ID"));
+                .orElseThrow(() -> new RuntimeException("Event category not found"));
         event.setEventCategory(eventCategory);
 
-        // Save the event
+        // Save event
         Events createdEvent = eventRepository.save(event);
 
         return new EventsDTO(createdEvent);
@@ -84,5 +83,4 @@ public class EventService {
         List<Events> events = eventRepository.findByFilters(location, organization, startTimestamp, endTimestamp);
         return events.stream().map(EventsDTO::new).collect(Collectors.toList());
     }
-
 }
