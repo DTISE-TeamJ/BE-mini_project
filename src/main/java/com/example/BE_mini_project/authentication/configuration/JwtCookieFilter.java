@@ -50,32 +50,11 @@ public class JwtCookieFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    /*
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String token = extractJwtFromCookies(request);
-
-        if (token != null) {
-            if (!jwtTokenService.validateToken(token) || blacklistAuthRedisRepository.isTokenBlacklisted(token)) {
-                // Token is invalid or blacklisted
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired token");
-                return;
-            }
-
-            // Token is valid, set authentication
-            Authentication authentication = jwtTokenService.getAuthentication(token);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-        }
-
-        filterChain.doFilter(request, response);
-    }
-    */
-
-
     private String resolveToken(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                if ("JWT".equals(cookie.getName())) {
+                if ("jwt".equals(cookie.getName())) {
                     return cookie.getValue();
                 }
             }

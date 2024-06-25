@@ -64,6 +64,15 @@ public class SecurityConfiguration {
                     auth.requestMatchers("/admin/**").hasRole("ADMIN");
                     auth.requestMatchers("/user/**").hasAnyRole("ADMIN", "USER");
                     auth.requestMatchers("/profile").authenticated();
+                    auth.requestMatchers("/api/v1/create-event/**").hasRole("ADMIN"); // Restrict POST /events to ADMIN
+                    auth.requestMatchers("/api/v1/all-events/**").hasAnyRole("ADMIN", "USER");
+                    auth.requestMatchers("/api/v1/events-location/**").hasAnyRole("ADMIN", "USER");
+                    auth.requestMatchers("/api/v1/events-organization/**").hasAnyRole("ADMIN", "USER");
+                    auth.requestMatchers("/api/v1/events-date-range/**").hasAnyRole("ADMIN", "USER");
+                    auth.requestMatchers("/api/v1/events-location-and-organization/**").hasAnyRole("ADMIN", "USER");
+                    auth.requestMatchers("/api/v1/events-location-and-date-range/**").hasAnyRole("ADMIN", "USER");
+                    auth.requestMatchers("/api/v1/events-organization-and-date-range/**").hasAnyRole("ADMIN", "USER");
+                    auth.requestMatchers("/api/v1/events-location-organization-and-date-range/**").hasAnyRole("ADMIN", "USER");
 
                     auth.anyRequest().authenticated();
                 })
@@ -82,24 +91,26 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    public JwtDecoder jwtDecoder(){
+    public JwtDecoder jwtDecoder() {
         return NimbusJwtDecoder.withPublicKey(keys.getPublicKey()).build();
     }
 
     @Bean
-    public JwtEncoder jwtEncoder(){
+    public JwtEncoder jwtEncoder() {
         JWK jwk = new RSAKey.Builder(keys.getPublicKey()).privateKey(keys.getPrivateKey()).build();
         JWKSource<SecurityContext> jwks = new ImmutableJWKSet<>(new JWKSet(jwk));
         return new NimbusJwtEncoder(jwks);
     }
 
     @Bean
-    public JwtAuthenticationConverter jwtAuthenticationConverter(){
+    public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
         jwtGrantedAuthoritiesConverter.setAuthoritiesClaimName("roles");
         jwtGrantedAuthoritiesConverter.setAuthorityPrefix("ROLE_");
+
         JwtAuthenticationConverter jwtConverter = new JwtAuthenticationConverter();
         jwtConverter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter);
+
         return jwtConverter;
     }
 }
