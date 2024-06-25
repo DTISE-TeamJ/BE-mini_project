@@ -66,15 +66,10 @@ public class SecurityConfiguration {
                     auth.requestMatchers("/profile").authenticated();
                     auth.requestMatchers("/api/v1/create-event/**").hasRole("ADMIN"); // Restrict POST /events to ADMIN
                     auth.requestMatchers("/api/v1/all-events/**").hasAnyRole("ADMIN", "USER");
-                    auth.requestMatchers("/api/v1/events-location/**").hasAnyRole("ADMIN", "USER");
-                    auth.requestMatchers("/api/v1/events-organization/**").hasAnyRole("ADMIN", "USER");
-                    auth.requestMatchers("/api/v1/events-date-range/**").hasAnyRole("ADMIN", "USER");
-                    auth.requestMatchers("/api/v1/events-location-and-organization/**").hasAnyRole("ADMIN", "USER");
-                    auth.requestMatchers("/api/v1/events-location-and-date-range/**").hasAnyRole("ADMIN", "USER");
-                    auth.requestMatchers("/api/v1/events-organization-and-date-range/**").hasAnyRole("ADMIN", "USER");
-                    auth.requestMatchers("/api/v1/events-location-organization-and-date-range/**").hasAnyRole("ADMIN", "USER");
+                    auth.requestMatchers("/api/v1/search-events/**").hasAnyRole("ADMIN", "USER");
 
                     auth.anyRequest().authenticated();
+//                    auth.anyRequest().permitAll();
                 })
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt

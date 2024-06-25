@@ -35,10 +35,9 @@ public class EventsDTO {
         this.location = event.getLocation();
         this.description = event.getDescription();
         this.isFree = event.getIsFree();
-        this.eventCategory = event.getEventCategory();
         this.createdAt = event.getCreatedAt() != null ? event.getCreatedAt().toLocalDateTime() : null;
         this.updatedAt = event.getUpdatedAt() != null ? event.getUpdatedAt().toLocalDateTime() : null;
         this.deletedAt = event.getDeletedAt() != null ? event.getDeletedAt().toLocalDateTime() : null;
-
+        this.eventCategory = event.getEventCategory();
     }
 }
