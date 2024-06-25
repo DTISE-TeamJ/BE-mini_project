@@ -26,9 +26,6 @@ public class Users implements UserDetails {
     private String password;
 
     @Column
-    private Integer pin;
-
-    @Column
     private String name;
 
     @Column(name = "profile_picture")
@@ -36,9 +33,6 @@ public class Users implements UserDetails {
 
     @Column(unique = true)
     private String referralCode;
-
-    @Column(columnDefinition = "int default 0")
-    private Integer point = 0;
 
     @Column(name = "created_at", nullable = false, updatable = false, insertable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private Timestamp createdAt;
@@ -63,18 +57,16 @@ public class Users implements UserDetails {
         super();
     }
 
-    public Users(Long id, String email, String username, String password, Integer pin, String name, String profilePicture,
-                 String referralCode, Integer point, Timestamp createdAt, Timestamp updatedAt, Timestamp deletedAt, Set<Roles> authorities) {
+    public Users(Long id, String email, String username, String password, String name, String profilePicture,
+                 String referralCode, Timestamp createdAt, Timestamp updatedAt, Timestamp deletedAt, Set<Roles> authorities) {
         super();
         this.id = id;
         this.email = email;
         this.username = username;
         this.password = password;
-        this.pin = pin;
         this.name = name;
         this.profilePicture = profilePicture;
         this.referralCode = referralCode;
-        this.point = point;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.deletedAt = deletedAt;
@@ -117,14 +109,6 @@ public class Users implements UserDetails {
         this.password = password;
     }
 
-    public Integer getPin() {
-        return pin;
-    }
-
-    public void setPin(Integer pin) {
-        this.pin = pin;
-    }
-
     public String getName() {
         return name;
     }
@@ -147,14 +131,6 @@ public class Users implements UserDetails {
 
     public void setReferralCode(String referralCode) {
         this.referralCode = referralCode;
-    }
-
-    public Integer getPoint() {
-        return point;
-    }
-
-    public void setPoint(Integer point) {
-        this.point = point;
     }
 
     public Timestamp getCreatedAt() {
