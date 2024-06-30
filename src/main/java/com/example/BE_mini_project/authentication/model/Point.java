@@ -38,6 +38,10 @@ public class Point {
     public Point() {
         LocalDateTime now = LocalDateTime.now();
         this.createdAt = Timestamp.valueOf(now);
-        this.expiredAt = Timestamp.valueOf(now.plusMonths(3));
+
+        LocalDateTime expiryDateTime = now.plusMonths(3);
+        expiryDateTime = expiryDateTime.withHour(23).withMinute(59).withSecond(59).withNano(9999999);
+
+        this.expiredAt = Timestamp.valueOf(expiryDateTime);
     }
 }

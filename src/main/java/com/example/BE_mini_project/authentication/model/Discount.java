@@ -21,8 +21,8 @@ public class Discount {
     @ColumnDefault("false")
     private boolean hasDiscount;
 
-    @OneToOne
-    @JoinColumn(name = "user_id")
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
     private Users user;
 
     @Column(name = "expired_at")
@@ -34,7 +34,11 @@ public class Discount {
     public Discount() {
         LocalDateTime now = LocalDateTime.now();
         this.createdAt = Timestamp.valueOf(now);
-        this.expiredAt = Timestamp.valueOf(now.plusMonths(3));
+
+        LocalDateTime expiryDateTime = now.plusMonths(3);
+        expiryDateTime = expiryDateTime.withHour(23).withMinute(59).withSecond(59).withNano(9999999);
+
+        this.expiredAt = Timestamp.valueOf(expiryDateTime);
         this.hasDiscount = false;
     }
 }
