@@ -18,7 +18,7 @@ public class Point {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "invitee_id", nullable = false)
     private Users invitee;
 
