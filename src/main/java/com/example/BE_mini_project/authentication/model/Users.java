@@ -53,6 +53,15 @@ public class Users implements UserDetails {
 
     private Set<Roles> authorities = new HashSet<>();
 
+    @OneToOne(mappedBy = "invitee", cascade = CascadeType.ALL)
+    private Point points;
+
+    @OneToMany(mappedBy = "inviter", cascade = CascadeType.ALL)
+    private Set<Point> pointsGiven = new HashSet<>();
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private Discount discount;
+
     public Users() {
         super();
     }
