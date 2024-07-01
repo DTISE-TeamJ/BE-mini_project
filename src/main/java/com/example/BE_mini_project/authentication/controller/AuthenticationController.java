@@ -19,6 +19,7 @@ import com.example.BE_mini_project.authentication.model.Users;
 import com.example.BE_mini_project.authentication.dto.LoginResponseDTO;
 import com.example.BE_mini_project.authentication.dto.RegistrationDTO;
 import com.example.BE_mini_project.authentication.service.AuthenticationService;
+
 import java.util.Map;
 import java.util.Optional;
 
@@ -127,79 +128,6 @@ public class AuthenticationController {
         }
     }
 
-    /*
-    public ResponseEntity<CustomResponse<LoginResponseDTO>> loginUser(@RequestBody RegistrationDTO body, HttpServletResponse response) {
-        try {
-            // Check if either username or email exists
-            Optional<Users> userOptionalByUsername = usersRepository.findByUsername(body.getUsername());
-            Optional<Users> userOptionalByEmail = usersRepository.findByEmail(body.getEmail());
-
-            Optional<Users> userOptional;
-            if (userOptionalByUsername.isPresent()) {
-                userOptional = userOptionalByUsername;
-            } else if (userOptionalByEmail.isPresent()) {
-                userOptional = userOptionalByEmail;
-            } else {
-                throw new UsernameException("Username or email is incorrect");
-            }
-
-            // Validate password
-            Users user = userOptional.get();
-            if (!passwordEncoder.matches(body.getPassword(), user.getPassword())) {
-                throw new PasswordException("Password is incorrect");
-            }
-
-            // Generate JWT token
-            String token = tokenService.generateJwt(user.getUsername());
-
-            // Create LoginResponseDTO
-            LoginResponseDTO loginResponse = new LoginResponseDTO(user, token);
-
-            // Set JWT token as cookie
-            if (token != null) {
-                Cookie cookie = new Cookie("jwt", token);
-                cookie.setHttpOnly(true);
-                cookie.setSecure(true);
-                cookie.setPath("/");
-                cookie.setMaxAge(60 * 60); // Set expiration time (in seconds)
-                response.addCookie(cookie);
-            }
-
-            CustomResponse<LoginResponseDTO> customResponse = new CustomResponse<>(
-                    HttpStatus.OK,
-                    "Success",
-                    "Login successful",
-                    loginResponse
-            );
-            return customResponse.toResponseEntity();
-        } catch (PasswordException e) {
-            CustomResponse<LoginResponseDTO> errorResponse = new CustomResponse<>(
-                    HttpStatus.UNAUTHORIZED,
-                    "Error",
-                    "Password is incorrect",
-                    null
-            );
-            return errorResponse.toResponseEntity();
-        } catch (UsernameException e) {
-            CustomResponse<LoginResponseDTO> errorResponse = new CustomResponse<>(
-                    HttpStatus.UNAUTHORIZED,
-                    "Error",
-                    "Username or email is incorrect",
-                    null
-            );
-            return errorResponse.toResponseEntity();
-        } catch (Exception e) {
-            CustomResponse<LoginResponseDTO> errorResponse = new CustomResponse<>(
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    "Error",
-                    "An unexpected error occurred",
-                    null
-            );
-            return errorResponse.toResponseEntity();
-        }
-    }
-    */
-
     @Autowired
     public AuthenticationController(BlacklistAuthRedisRepository blacklistAuthRedisRepository) {
         this.blacklistAuthRedisRepository = blacklistAuthRedisRepository;
@@ -207,11 +135,20 @@ public class AuthenticationController {
 
     @PostMapping("/logout")
     public void logout(HttpServletRequest request, HttpServletResponse response) {
-        String token = extractJwtFromCookies(request);
-
-        if (token != null) {
-            blacklistAuthRedisRepository.blacklistToken(token);
-        }
+//        String token = extractJwtFromCookies(request);
+//
+//        if (token != null) {
+//            blacklistAuthRedisRepository.blacklistToken(token);
+//        }
+//
+//        SecurityContextHolder.clearContext();
+//
+//        // Clear the JWT cookie
+//        Cookie cookie = new Cookie("jwt", null);
+//        cookie.setHttpOnly(true);
+//        cookie.setMaxAge(0);
+//        cookie.setPath("/");
+//        response.addCookie(cookie);
 
         SecurityContextHolder.clearContext();
 
@@ -228,38 +165,11 @@ public class AuthenticationController {
         return Claims.getClaimsFromJwt();
     }
 
-    /*
-    public ResponseEntity<?> getProfile(HttpServletRequest request) {
-        String jwt = extractJwtFromCookies(request);
-        if (jwt == null || !jwtTokenProvider.validateToken(jwt)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid or missing token");
-        }
-
-        Map<String, Object> claims = jwtTokenProvider.getClaimsFromJwt(jwt);
-        return ResponseEntity.ok().body(claims);
-    }
-    */
-
-
-    /*
-    @PostMapping("/redeem")
-    public ResponseEntity<String> redeemPoints(@RequestParam String username) {
-        Users user = usersRepository.findByUsername(username);
-        if (user.getPoint() >= 100) {
-            user.setPoint(user.getPoint() - 100);
-            usersRepository.save(user);
-            return ResponseEntity.ok("Discount applied");
-        } else {
-            return ResponseEntity.badRequest().body("Not enough points");
-        }
-    }
-    */
-
     private String extractJwtFromCookies(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                if ("jwt".equals(cookie.getName())) {
+                if ("JWT".equals(cookie.getName())) {
                     return cookie.getValue();
                 }
             }

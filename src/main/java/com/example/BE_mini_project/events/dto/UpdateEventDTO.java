@@ -5,9 +5,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Data;
 import java.time.LocalDateTime;
 
-
 @Data
-public class CreateEventDTO {
+public class UpdateEventDTO {
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     private LocalDateTime date;
 
@@ -23,5 +22,5 @@ public class CreateEventDTO {
     private String description;
     private boolean isFree;
     private Long eventCategoryId;
-    private Long userId; // Add this line
+    private Long userId;
 }
