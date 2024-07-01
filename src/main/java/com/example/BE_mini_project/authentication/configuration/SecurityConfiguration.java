@@ -65,6 +65,8 @@ public class SecurityConfiguration {
                     auth.requestMatchers("/user/**").hasAnyRole("ADMIN", "USER");
                     auth.requestMatchers("/profile").authenticated();
                     auth.requestMatchers("/api/v1/create-event/**").hasRole("ADMIN"); // Restrict POST /events to ADMIN
+                    auth.requestMatchers("/api/v1/edit-event/**").hasRole("ADMIN"); // Restrict PUT /events to ADMIN
+                    auth.requestMatchers("/api/v1/delete-event/**").hasRole("ADMIN"); // Restrict DELETE /events to ADMIN
                     auth.requestMatchers("/api/v1/all-events/**").hasAnyRole("ADMIN", "USER");
                     auth.requestMatchers("/api/v1/search-events/**").hasAnyRole("ADMIN", "USER");
 

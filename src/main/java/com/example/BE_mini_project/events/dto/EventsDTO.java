@@ -1,7 +1,6 @@
 package com.example.BE_mini_project.events.dto;
 
 import com.example.BE_mini_project.authentication.dto.UserDTO;
-import com.example.BE_mini_project.events.model.EventCategory;
 import com.example.BE_mini_project.events.model.Events;
 import lombok.Data;
 
@@ -22,7 +21,6 @@ public class EventsDTO {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
-//    private EventCategory eventCategory;
     private EventCategoryDTO eventCategory;
     private UserDTO user;
 
@@ -42,7 +40,6 @@ public class EventsDTO {
         this.createdAt = event.getCreatedAt() != null ? event.getCreatedAt().toLocalDateTime() : null;
         this.updatedAt = event.getUpdatedAt() != null ? event.getUpdatedAt().toLocalDateTime() : null;
         this.deletedAt = event.getDeletedAt() != null ? event.getDeletedAt().toLocalDateTime() : null;
-//        this.eventCategory = event.getEventCategory();
         this.eventCategory = new EventCategoryDTO(event.getEventCategory());
         this.user = new UserDTO(event.getUser());
     }

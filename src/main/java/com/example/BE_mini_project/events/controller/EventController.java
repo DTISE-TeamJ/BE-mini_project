@@ -2,6 +2,7 @@ package com.example.BE_mini_project.events.controller;
 
 import com.example.BE_mini_project.events.dto.CreateEventDTO;
 import com.example.BE_mini_project.events.dto.EventsDTO;
+import com.example.BE_mini_project.events.dto.UpdateEventDTO;
 import com.example.BE_mini_project.events.service.EventService;
 import com.example.BE_mini_project.response.CustomResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -12,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -58,6 +61,40 @@ public class EventController {
                 eventDTOs
         );
 
+        return customResponse.toResponseEntity();
+    }
+
+    @PutMapping(value = "/edit-event/{id}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    public ResponseEntity<CustomResponse<EventsDTO>> updateEvent(
+            @PathVariable Long id,
+            @RequestParam("image") MultipartFile file,
+            @RequestParam("eventData") String eventData) throws JsonProcessingException {
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        UpdateEventDTO updateEventDTO = objectMapper.readValue(eventData, UpdateEventDTO.class);
+
+        EventsDTO updatedEventDTO = eventService.updateEvent(id, file, updateEventDTO);
+
+        CustomResponse<EventsDTO> customResponse = new CustomResponse<>(
+                HttpStatus.OK,
+                "Updated",
+                "Event updated successfully",
+                updatedEventDTO
+        );
+
+        return customResponse.toResponseEntity();
+    }
+
+    @DeleteMapping("/delete-event/{id}")
+    public ResponseEntity<CustomResponse<EventsDTO>> deleteEvent(@PathVariable Long id) {
+        EventsDTO deletedEvent = eventService.deleteEvent(id);
+
+        CustomResponse<EventsDTO> customResponse = new CustomResponse<>(
+                HttpStatus.OK,
+                "Deleted",
+                "Event deleted successfully",
+                deletedEvent
+        );
         return customResponse.toResponseEntity();
     }
 
