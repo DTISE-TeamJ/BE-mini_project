@@ -1,9 +1,11 @@
 package com.example.BE_mini_project.events.model;
 
 import com.example.BE_mini_project.authentication.model.Users;
+import com.example.BE_mini_project.ticket.model.TicketType;
 import jakarta.persistence.*;
 import java.sql.Timestamp;
 import java.time.LocalTime;
+import java.util.Set;
 
 @Entity
 @Table(name = "event")
@@ -40,6 +42,9 @@ public class Events {
     private Timestamp updatedAt;
 
     private Timestamp deletedAt;
+
+    @OneToMany(mappedBy = "event")
+    private Set<TicketType> ticketTypes;
 
     // Getters and Setters
     public Long getId() {
@@ -160,5 +165,13 @@ public class Events {
 
     public void setDeletedAt(Timestamp deletedAt) {
         this.deletedAt = deletedAt;
+    }
+
+    public Set<TicketType> getTicketTypes() {
+        return ticketTypes;
+    }
+
+    public void setTicketTypes(Set<TicketType> ticketTypes) {
+        this.ticketTypes = ticketTypes;
     }
 }

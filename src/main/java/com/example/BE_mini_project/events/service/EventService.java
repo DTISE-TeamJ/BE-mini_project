@@ -9,6 +9,8 @@ import com.example.BE_mini_project.events.model.Events;
 import com.example.BE_mini_project.events.repository.EventCategoryRepository;
 import com.example.BE_mini_project.events.repository.EventRepository;
 import com.example.BE_mini_project.authentication.repository.UsersRepository;
+import com.example.BE_mini_project.ticket.model.TicketType;
+import com.example.BE_mini_project.ticket.repository.TicketRepository;
 import jakarta.transaction.Transactional;
 import org.apache.velocity.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
@@ -32,14 +34,18 @@ public class EventService {
     private EventCategoryRepository eventCategoryRepository;
     private CloudinaryService cloudinaryService;
 
+    private TicketRepository ticketRepository;
 
-    public EventService (EventRepository eventRepository, UsersRepository usersRepository, EventCategoryRepository eventCategoryRepository, CloudinaryService cloudinaryService) {
+
+    public EventService (EventRepository eventRepository, UsersRepository usersRepository, EventCategoryRepository eventCategoryRepository, CloudinaryService cloudinaryService, TicketRepository ticketRepository) {
         this.eventRepository = eventRepository;
         this.usersRepository = usersRepository;
         this.eventCategoryRepository = eventCategoryRepository;
         this.cloudinaryService = cloudinaryService;
+        this.ticketRepository = ticketRepository;
     }
 
+    /*
     public EventsDTO createEvent(MultipartFile file, CreateEventDTO createEventDTO) {
         // Cloudinary upload logic
         Map<String, String> uploadResult = cloudinaryService.uploadFile(file);
@@ -71,6 +77,60 @@ public class EventService {
         Events createdEvent = eventRepository.save(event);
 
         return new EventsDTO(createdEvent);
+    }
+    */
+
+    @Transactional
+    public EventsDTO createEvent(MultipartFile file, CreateEventDTO createEventDTO) {
+        // Cloudinary upload logic
+        Map<String, String> uploadResult = cloudinaryService.uploadFile(file);
+        String imageUrl = uploadResult.get("url");
+
+        // Create event
+        Events event = new Events();
+        event.setName(createEventDTO.getName());
+        event.setDate(Timestamp.valueOf(createEventDTO.getDate()));
+        event.setStart(LocalTime.parse(createEventDTO.getStart()));
+        event.setEnd(LocalTime.parse(createEventDTO.getEnd()));
+        event.setPic(imageUrl);
+        event.setOrganization(createEventDTO.getOrganization());
+        event.setLocation(createEventDTO.getLocation());
+        event.setDescription(createEventDTO.getDescription());
+        event.setCreatedAt(Timestamp.valueOf(createEventDTO.getCreatedAt()));
+        event.setIsFree(createEventDTO.isFree());
+
+        // Fetch user and event category
+        Users user = usersRepository.findById(createEventDTO.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        event.setUser(user);
+
+        EventCategory eventCategory = eventCategoryRepository.findById(createEventDTO.getEventCategoryId())
+                .orElseThrow(() -> new RuntimeException("Event category not found"));
+        event.setEventCategory(eventCategory);
+
+        // Save event
+        Events createdEvent = eventRepository.save(event);
+
+        // If the event is not free, create ticket types
+        if (!createEventDTO.isFree()) {
+            List<TicketType> ticketTypes = List.of(
+                    createTicketType("Golden", 100.00, 100, createdEvent),
+                    createTicketType("Platinum", 200.00, 50, createdEvent),
+                    createTicketType("Diamond", 500.00, 20, createdEvent)
+            );
+            ticketRepository.saveAll(ticketTypes);
+        }
+
+        return new EventsDTO(createdEvent);
+    }
+
+    private TicketType createTicketType(String name, Double price, Integer quantity, Events event) {
+        TicketType ticketType = new TicketType();
+        ticketType.setName(name);
+        ticketType.setPrice(price);
+        ticketType.setQuantity(quantity);
+        ticketType.setEvent(event);
+        return ticketType;
     }
 
     public List<EventsDTO> getAllEvents() {

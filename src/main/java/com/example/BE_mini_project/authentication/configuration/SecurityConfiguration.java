@@ -1,5 +1,7 @@
 package com.example.BE_mini_project.authentication.configuration;
 
+import jakarta.servlet.http.Cookie;
+import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,15 +31,21 @@ import com.nimbusds.jose.proc.SecurityContext;
 import com.example.BE_mini_project.authentication.util.RSAKeyProperties;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import com.example.BE_mini_project.authentication.repository.BlacklistAuthRedisRepository;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
+
+@Log
 @Configuration
 public class SecurityConfiguration {
     private final RSAKeyProperties keys;
 
-    @Autowired
-    private BlacklistAuthRedisRepository blacklistAuthRedisRepository;
+    private final BlacklistAuthRedisRepository blacklistAuthRedisRepository;
 
-    public SecurityConfiguration(RSAKeyProperties keys){
+    public SecurityConfiguration(RSAKeyProperties keys, BlacklistAuthRedisRepository blacklistAuthRedisRepository){
+        this.blacklistAuthRedisRepository = blacklistAuthRedisRepository;
         this.keys = keys;
     }
 
@@ -58,7 +66,7 @@ public class SecurityConfiguration {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Enable CORS
                 .authorizeHttpRequests(auth -> {
                     auth.requestMatchers("/auth/**").permitAll();
                     auth.requestMatchers("/admin/**").hasRole("ADMIN");
@@ -71,20 +79,49 @@ public class SecurityConfiguration {
                     auth.requestMatchers("/api/v1/search-events/**").hasAnyRole("ADMIN", "USER");
 
                     auth.anyRequest().authenticated();
-//                    auth.anyRequest().permitAll();
                 })
-                .oauth2ResourceServer(oauth2 -> oauth2
-                        .jwt(jwt -> jwt
-                                .jwtAuthenticationConverter(jwtAuthenticationConverter())
-                        )
-                )
+//                .oauth2ResourceServer((oauth2) ->
+//                        oauth2
+//                        .jwt(jwt -> jwt
+//                                .jwtAuthenticationConverter(jwtAuthenticationConverter())
+//                        )
+//                )
+                .oauth2ResourceServer((oauth2) -> {
+                    oauth2.jwt(jwt -> {
+                        jwt.jwtAuthenticationConverter(jwtAuthenticationConverter());
+                        jwt.decoder(jwtDecoder());
+                    });
+                    oauth2.bearerTokenResolver((request) -> {
+                        Cookie[] cookies = request.getCookies();
+                        if (cookies != null) {
+                            for (Cookie cookie : cookies) {
+                                if ("jwt".equals(cookie.getName())) {
+                                    return cookie.getValue();
+                                }
+                            }
+                        }
+                        return null;
+                    });
+                })
+                .addFilterAfter(new JwtCookieFilter(jwtDecoder(), blacklistAuthRedisRepository), UsernamePasswordAuthenticationFilter.class)
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                .httpBasic(Customizer.withDefaults())
-                .addFilterBefore(new JwtCookieFilter(jwtDecoder(), blacklistAuthRedisRepository), UsernamePasswordAuthenticationFilter.class);
+                .httpBasic(Customizer.withDefaults());
 
         return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000")); // Add your frontend origin here
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type"));
+        configuration.setAllowCredentials(true);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 
     @Bean
