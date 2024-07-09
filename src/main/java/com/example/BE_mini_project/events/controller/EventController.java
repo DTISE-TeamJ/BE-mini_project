@@ -13,17 +13,16 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1")
+@CrossOrigin(origins = "http://localhost:3000", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS})
 public class EventController {
+
     private final EventService eventService;
     private final ObjectMapper objectMapper;
-
 
     public EventController (EventService eventService, ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
@@ -122,4 +121,5 @@ public class EventController {
 
         return customResponse.toResponseEntity();
     }
+
 }

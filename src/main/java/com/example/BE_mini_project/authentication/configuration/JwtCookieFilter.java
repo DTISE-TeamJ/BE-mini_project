@@ -1,6 +1,7 @@
 package com.example.BE_mini_project.authentication.configuration;
 
 import com.example.BE_mini_project.authentication.repository.BlacklistAuthRedisRepository;
+import lombok.extern.java.Log;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Component;
@@ -16,6 +17,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 
 
+@Log
 @Component
 public class JwtCookieFilter extends OncePerRequestFilter {
     private final JwtDecoder jwtDecoder;
@@ -30,7 +32,6 @@ public class JwtCookieFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         String jwt = resolveToken(request);
-
         if (StringUtils.hasText(jwt)) {
             if (blacklistAuthRedisRepository.isTokenBlacklisted(jwt)) {
                 SecurityContextHolder.clearContext();
@@ -54,7 +55,7 @@ public class JwtCookieFilter extends OncePerRequestFilter {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                if ("JWT".equals(cookie.getName())) {
+                if ("jwt".equals(cookie.getName())) {
                     return cookie.getValue();
                 }
             }
