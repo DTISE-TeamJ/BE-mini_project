@@ -4,20 +4,21 @@ import com.example.BE_mini_project.authentication.model.Users;
 import com.example.BE_mini_project.events.dto.CreateEventDTO;
 import com.example.BE_mini_project.events.dto.EventsDTO;
 import com.example.BE_mini_project.events.dto.UpdateEventDTO;
+import com.example.BE_mini_project.events.mapper.TicketTypeMapper;
 import com.example.BE_mini_project.events.model.EventCategory;
 import com.example.BE_mini_project.events.model.Events;
+import com.example.BE_mini_project.events.model.Promo;
+import com.example.BE_mini_project.events.model.TicketType;
 import com.example.BE_mini_project.events.repository.EventCategoryRepository;
 import com.example.BE_mini_project.events.repository.EventRepository;
 import com.example.BE_mini_project.authentication.repository.UsersRepository;
-import com.example.BE_mini_project.ticket.model.TicketType;
-import com.example.BE_mini_project.ticket.repository.TicketRepository;
 import jakarta.transaction.Transactional;
 import org.apache.velocity.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -27,22 +28,20 @@ import java.util.stream.Collectors;
 @Service
 @Transactional
 public class EventService {
-    private EventRepository eventRepository;
+    private final EventRepository eventRepository;
+    private final UsersRepository usersRepository;
+    private final EventCategoryRepository eventCategoryRepository;
+    private final CloudinaryService cloudinaryService;
+    private final TicketService ticketService;
+    private final PromoService promoService;
 
-    private UsersRepository usersRepository;
-
-    private EventCategoryRepository eventCategoryRepository;
-    private CloudinaryService cloudinaryService;
-
-    private TicketRepository ticketRepository;
-
-
-    public EventService (EventRepository eventRepository, UsersRepository usersRepository, EventCategoryRepository eventCategoryRepository, CloudinaryService cloudinaryService, TicketRepository ticketRepository) {
+    public EventService (EventRepository eventRepository, UsersRepository usersRepository, EventCategoryRepository eventCategoryRepository, CloudinaryService cloudinaryService, TicketService ticketService, PromoService promoService) {
         this.eventRepository = eventRepository;
         this.usersRepository = usersRepository;
         this.eventCategoryRepository = eventCategoryRepository;
         this.cloudinaryService = cloudinaryService;
-        this.ticketRepository = ticketRepository;
+        this.ticketService = ticketService;
+        this.promoService = promoService;
     }
 
     @Transactional
@@ -60,7 +59,6 @@ public class EventService {
         event.setOrganization(createEventDTO.getOrganization());
         event.setLocation(createEventDTO.getLocation());
         event.setDescription(createEventDTO.getDescription());
-        event.setCreatedAt(Timestamp.valueOf(createEventDTO.getCreatedAt()));
 
         // Fetch user and event category
         Users user = usersRepository.findById(createEventDTO.getUserId())
@@ -71,29 +69,20 @@ public class EventService {
                 .orElseThrow(() -> new RuntimeException("Event category not found"));
         event.setEventCategory(eventCategory);
 
-        // Save event
         Events createdEvent = eventRepository.save(event);
 
-        // If the event is not free, create ticket types
-        if (!createEventDTO.isFree()) {
-            List<TicketType> ticketTypes = List.of(
-                    createTicketType("Golden", 100.00, 100, createdEvent),
-                    createTicketType("Platinum", 200.00, 50, createdEvent),
-                    createTicketType("Diamond", 500.00, 20, createdEvent)
-            );
-            ticketRepository.saveAll(ticketTypes);
+        List<TicketType> ticketTypes = ticketService.createTicketTypes(createEventDTO.getTicketTypes(), createdEvent);
+        event.setTicketTypes(ticketTypes);
+
+        if (createEventDTO.getPromos() != null && !createEventDTO.getPromos().isEmpty()) {
+            List<Promo> promos = promoService.createPromos(createEventDTO.getPromos(), createdEvent);
+            createdEvent.getPromos().addAll(promos);
         }
 
-        return new EventsDTO(createdEvent);
-    }
+        createdEvent = eventRepository.save(createdEvent);
 
-    private TicketType createTicketType(String name, Double price, Integer quantity, Events event) {
-        TicketType ticketType = new TicketType();
-        ticketType.setName(name);
-        ticketType.setPrice(price);
-        ticketType.setQuantity(quantity);
-        ticketType.setEvent(event);
-        return ticketType;
+
+        return new EventsDTO(createdEvent);
     }
 
     public List<EventsDTO> getAllEvents() {
@@ -133,9 +122,6 @@ public class EventService {
         }
         if (updateEventDTO.getDescription() != null) {
             event.setDescription(updateEventDTO.getDescription());
-        }
-        if (updateEventDTO.getCreatedAt() != null) {
-            event.setCreatedAt(Timestamp.valueOf(updateEventDTO.getCreatedAt()));
         }
 
         // Fetch user and event category

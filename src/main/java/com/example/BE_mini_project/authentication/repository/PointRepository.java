@@ -8,11 +8,13 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
 public interface PointRepository extends JpaRepository<Point, Long> {
     List<Point> findAllByExpiredAtBefore(Timestamp now);
+    List<Point> findByInviterIdAndExpiredAtAfterOrderByExpiredAtAsc(Long inviterId, LocalDateTime now);
 
     @Modifying
     @Transactional

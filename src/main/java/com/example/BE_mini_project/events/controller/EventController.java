@@ -7,17 +7,15 @@ import com.example.BE_mini_project.events.service.EventService;
 import com.example.BE_mini_project.response.CustomResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.multipart.MultipartFile;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/events")
 @CrossOrigin(origins = "http://localhost:3000", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS})
 public class EventController {
 
@@ -49,7 +47,7 @@ public class EventController {
         return customResponse.toResponseEntity();
     }
 
-    @GetMapping("/all-events")
+    @GetMapping
     public ResponseEntity<CustomResponse<List<EventsDTO>>> getAllEvents() {
         List<EventsDTO> eventDTOs = eventService.getAllEvents();
 

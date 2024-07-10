@@ -68,15 +68,25 @@ public class SecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Enable CORS
                 .authorizeHttpRequests(auth -> {
-                    auth.requestMatchers("/auth/**").permitAll();
+                    auth.requestMatchers("/api/v1/auth/**").permitAll();
                     auth.requestMatchers("/admin/**").hasRole("ADMIN");
                     auth.requestMatchers("/user/**").hasAnyRole("ADMIN", "USER");
                     auth.requestMatchers("/profile").authenticated();
-                    auth.requestMatchers("/api/v1/create-event/**").hasRole("ADMIN"); // Restrict POST /events to ADMIN
-                    auth.requestMatchers("/api/v1/edit-event/**").hasRole("ADMIN"); // Restrict PUT /events to ADMIN
-                    auth.requestMatchers("/api/v1/delete-event/**").hasRole("ADMIN"); // Restrict DELETE /events to ADMIN
-                    auth.requestMatchers("/api/v1/all-events/**").hasAnyRole("ADMIN", "USER");
-                    auth.requestMatchers("/api/v1/search-events/**").hasAnyRole("ADMIN", "USER");
+                    auth.requestMatchers("/api/v1/events/create-event/**").hasRole("ADMIN"); // Restrict POST /events to ADMIN
+                    auth.requestMatchers("/api/v1/events/edit-event/**").hasRole("ADMIN"); // Restrict PUT /events to ADMIN
+                    auth.requestMatchers("/api/v1/events/delete-event/**").hasRole("ADMIN"); // Restrict DELETE /events to ADMIN
+                    auth.requestMatchers("/api/v1/events/all-events/**").hasAnyRole("ADMIN", "USER");
+                    auth.requestMatchers("/api/v1/events/search-events/**").hasAnyRole("ADMIN", "USER");
+                    auth.requestMatchers("/api/v1/ticket-types/**").hasAnyRole("ADMIN", "USER");
+                    auth.requestMatchers("/api/v1/ticket-types/update/**").hasRole("ADMIN");
+                    auth.requestMatchers("/api/v1/ticket-types/delete/**").hasRole("ADMIN");
+                    auth.requestMatchers("/api/v1/promos/**").hasAnyRole("ADMIN", "USER");
+                    auth.requestMatchers("/api/v1/promos/update/**").hasRole("ADMIN");
+                    auth.requestMatchers("/api/v1/promos/delete/**").hasRole("ADMIN");
+                    auth.requestMatchers("/api/v1/orders/**").hasAnyRole("ADMIN", "USER");
+                    auth.requestMatchers("/api/v1/orders/add-item/**").hasRole("USER");
+                    auth.requestMatchers("/api/v1/orders/adjust-quantity/**").hasRole("USER");
+                    auth.requestMatchers("/api/v1/orders/{orderId}/process-payment/**").hasRole("USER");
 
                     auth.anyRequest().authenticated();
                 })

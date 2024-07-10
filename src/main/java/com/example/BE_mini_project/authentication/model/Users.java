@@ -1,13 +1,11 @@
 package com.example.BE_mini_project.authentication.model;
 
+import com.example.BE_mini_project.events.model.Promo;
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import java.sql.Timestamp;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @Table(name = "users")
@@ -62,6 +60,14 @@ public class Users implements UserDetails {
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private Discount discount;
+
+//    @ManyToMany
+//    @JoinTable(
+//            name = "user_event_promos",
+//            joinColumns = @JoinColumn(name = "user_id"),
+//            inverseJoinColumns = @JoinColumn(name = "promo_id")
+//    )
+//    private List<Promo> promos = new ArrayList<>();
 
     public Users() {
         super();

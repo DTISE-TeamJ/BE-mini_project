@@ -1,13 +1,18 @@
 package com.example.BE_mini_project.events.model;
 
 import com.example.BE_mini_project.authentication.model.Users;
-import com.example.BE_mini_project.ticket.model.TicketType;
 import jakarta.persistence.*;
+import lombok.Data;
+import org.hibernate.annotations.ColumnDefault;
+
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 @Entity
+@Data
 @Table(name = "event")
 public class Events {
     @Id
@@ -25,7 +30,6 @@ public class Events {
     private String organization;
     private String location;
     private String description;
-//    private Boolean isFree;
 
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
@@ -35,16 +39,41 @@ public class Events {
     @JoinColumn(name = "event_category_id", referencedColumnName = "id")
     private EventCategory eventCategory;
 
+    @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "created_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private Timestamp createdAt;
+    private LocalDateTime createdAt;
 
+    @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private Timestamp updatedAt;
+    private LocalDateTime updatedAt;
 
-    private Timestamp deletedAt;
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 
-    @OneToMany(mappedBy = "event")
-    private Set<TicketType> ticketTypes;
+//    @ManyToMany
+//    @JoinTable(
+//            name = "user_event_promos",
+//            joinColumns = @JoinColumn(name = "event_id"),
+//            inverseJoinColumns = @JoinColumn(name = "promo_id")
+//    )
+
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Promo> promos = new ArrayList<>();
+
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<TicketType> ticketTypes = new ArrayList<>();
+
+    @PrePersist
+    protected void onCreate() {
+        LocalDateTime now = LocalDateTime.now();
+        createdAt = now;
+        updatedAt = now;
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 
     // Getters and Setters
     public Long getId() {
@@ -127,35 +156,35 @@ public class Events {
         this.eventCategory = eventCategory;
     }
 
-    public Timestamp getCreatedAt() {
+    public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Timestamp createdAt) {
+    public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
 
-    public Timestamp getUpdatedAt() {
+    public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
 
-    public void setUpdatedAt(Timestamp updatedAt) {
+    public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
 
-    public Timestamp getDeletedAt() {
+    public LocalDateTime getDeletedAt() {
         return deletedAt;
     }
 
-    public void setDeletedAt(Timestamp deletedAt) {
+    public void setDeletedAt(LocalDateTime deletedAt) {
         this.deletedAt = deletedAt;
     }
 
-    public Set<TicketType> getTicketTypes() {
+    public List<TicketType> getTicketTypes() {
         return ticketTypes;
     }
 
-    public void setTicketTypes(Set<TicketType> ticketTypes) {
+    public void setTicketTypes(List<TicketType> ticketTypes) {
         this.ticketTypes = ticketTypes;
     }
 }
