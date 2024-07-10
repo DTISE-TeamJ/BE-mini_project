@@ -1,56 +1,217 @@
 package com.example.BE_mini_project.authentication.util;
 
-import java.security.KeyPair;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
-
 import lombok.extern.java.Log;
 import org.springframework.stereotype.Component;
+import java.io.*;
+import java.security.*;
+import java.security.spec.*;
+import java.util.Base64;
 
+/*
 @Log
 @Component
 public class RSAKeyProperties {
+
+    private static final String PUBLIC_KEY_FILE = "publicKey.pem";
+    private static final String PRIVATE_KEY_FILE = "privateKey.pem";
+
+
     private RSAPublicKey publicKey;
     private RSAPrivateKey privateKey;
 
-    public RSAKeyProperties(){
+    public RSAKeyProperties() {
+        try {
+            if (keysExist()) {
+                loadKeys();
+            } else {
+                generateAndSaveKeys();
+            }
+        } catch (Exception e) {
+            log.severe("Failed to initialize RSA keys: " + e.getMessage());
+        }
+    }
+
+    private boolean keysExist() {
+        File publicKeyFile = new File(PUBLIC_KEY_FILE);
+        File privateKeyFile = new File(PRIVATE_KEY_FILE);
+        return publicKeyFile.exists() && privateKeyFile.exists();
+    }
+
+    private void loadKeys() throws Exception {
+        this.publicKey = (RSAPublicKey) loadKey(PUBLIC_KEY_FILE, true);
+        this.privateKey = (RSAPrivateKey) loadKey(PRIVATE_KEY_FILE, false);
+        log.info("RSA keys loaded from files.");
+    }
+
+    private void generateAndSaveKeys() throws Exception {
         KeyPair pair = KeyGeneratorUtility.generateRsaKey();
         this.publicKey = (RSAPublicKey) pair.getPublic();
         this.privateKey = (RSAPrivateKey) pair.getPrivate();
+        saveKey(this.publicKey, PUBLIC_KEY_FILE);
+        saveKey(this.privateKey, PRIVATE_KEY_FILE);
+        log.info("RSA keys generated and saved to files.");
     }
 
-    public RSAPublicKey getPublicKey(){
+    private void saveKey(Key key, String fileName) throws IOException {
+        byte[] keyBytes = key.getEncoded();
+        String keyString = Base64.getEncoder().encodeToString(keyBytes);
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
+            writer.write("-----BEGIN " + (key instanceof RSAPublicKey ? "PUBLIC" : "PRIVATE") + " KEY-----");
+            writer.newLine();
+            writer.write(keyString);
+            writer.newLine();
+            writer.write("-----END " + (key instanceof RSAPublicKey ? "PUBLIC" : "PRIVATE") + " KEY-----");
+        }
+    }
+
+    private Key loadKey(String fileName, boolean isPublicKey) throws Exception {
+        StringBuilder keyBuilder = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.startsWith("-----")) continue;
+                keyBuilder.append(line);
+            }
+        }
+        byte[] keyBytes = Base64.getDecoder().decode(keyBuilder.toString());
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        if (isPublicKey) {
+            X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
+            return keyFactory.generatePublic(spec);
+        } else {
+            PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
+            return keyFactory.generatePrivate(spec);
+        }
+    }
+
+    public RSAPublicKey getPublicKey() {
         log.info(this.publicKey.toString());
         return this.publicKey;
     }
 
-    public void setPublicKey(RSAPublicKey publicKey){
+    public void setPublicKey(RSAPublicKey publicKey) {
         this.publicKey = publicKey;
     }
 
-    public RSAPrivateKey getPrivateKey(){
+    public RSAPrivateKey getPrivateKey() {
         log.info(this.privateKey.toString());
         return this.privateKey;
     }
 
-    public void setPrivateKey(RSAPrivateKey privateKey){
+    public void setPrivateKey(RSAPrivateKey privateKey) {
         this.privateKey = privateKey;
     }
 }
-//2024-07-09T13:41:35.784+07:00  INFO 4363 --- [BE-mini_project] [  restartedMain] c.e.B.a.util.RSAKeyProperties            : Sun RSA public key, 2048 bits
-//params: null
-//modulus: 21141357218500422287443308348545812928909406634630450278655146643449030857363967683816287006063392194663150081428694935829588448793521094424627618143161128291781318747850013121198679506502456751011761930541844216682913180726151823984664147022558203025886524213337305148410196877427941361226675711970004424491365088858684391875514983237557625082742508319190162796177577011188695189878789995169664157380272845522529143159279862414516494250525685920305139135427978604368172767277271139965556691800280641846893331239321294718644059882155934434778921649809865824356755401587270647974743096678256256211550849674745070492513
-//public exponent: 65537
-//        2024-07-09T13:41:35.785+07:00  INFO 4363 --- [BE-mini_project] [  restartedMain] c.e.B.a.util.RSAKeyProperties            : SunRsaSign RSA private CRT key, 2048 bits
-//params: null
-//modulus: 21141357218500422287443308348545812928909406634630450278655146643449030857363967683816287006063392194663150081428694935829588448793521094424627618143161128291781318747850013121198679506502456751011761930541844216682913180726151823984664147022558203025886524213337305148410196877427941361226675711970004424491365088858684391875514983237557625082742508319190162796177577011188695189878789995169664157380272845522529143159279862414516494250525685920305139135427978604368172767277271139965556691800280641846893331239321294718644059882155934434778921649809865824356755401587270647974743096678256256211550849674745070492513
-//private exponent: 7006903278194724697583900707062630310036181416769275531419937443617443570087168195983544716094770005649912002665863294034735961308025568640574583726560612594805713177625618124197880854490438425450150005238253173483216460908383718643985686520240272333571588452902934298619373580948354583017297452426880481321552953968104297715614288521300599143081452721494498026241438216597552933140349561725755057885144323108896268913889025286252577016930418288032895724947873352156759959319496551354588656002159764830185594835940126866460708965276495214813569871525628801995160020232704406793708037712030246407695555307436575600997
+*/
 
-//2024-07-09T13:40:50.829+07:00  INFO 4333 --- [BE-mini_project] [  restartedMain] c.e.B.a.util.RSAKeyProperties            : Sun RSA public key, 2048 bits
-//params: null
-//modulus: 28495217450690034460152468987618313561547999467435427477735521038369889118647317488038132655031086129576278724127197012000397829906758251313607471334684826493345538061126204298283936268722431280170540689307843001617574225343026378898222458682259411460017459380769175908741353792284485140608720598161860673423269493003527792673100700506299723516202049980307662308327562567299311632960273653468568629619180562735003885305028492583112529811207747746324833850021962105404396900103730294289796540465811205660985475864350572833015792341348751031543027775349475581018679967893167700003221083875506757421699289616678720512763
-//public exponent: 65537
-//        2024-07-09T13:40:50.830+07:00  INFO 4333 --- [BE-mini_project] [  restartedMain] c.e.B.a.util.RSAKeyProperties            : SunRsaSign RSA private CRT key, 2048 bits
-//params: null
-//modulus: 28495217450690034460152468987618313561547999467435427477735521038369889118647317488038132655031086129576278724127197012000397829906758251313607471334684826493345538061126204298283936268722431280170540689307843001617574225343026378898222458682259411460017459380769175908741353792284485140608720598161860673423269493003527792673100700506299723516202049980307662308327562567299311632960273653468568629619180562735003885305028492583112529811207747746324833850021962105404396900103730294289796540465811205660985475864350572833015792341348751031543027775349475581018679967893167700003221083875506757421699289616678720512763
-//private exponent: 13509107926712229285395077764397226030445341462886899487819745161697246668544061436338934977063580054716190548219052003644542175796923552623919070667999108276977064369122650831555943968585775056455112367316091399671300657360084068424977826132685352000591154049781013709577702096926605632218639073880235761833017830041115792601738144465757157031232359384454598759196667467267479762062451034108948826266543344266477663886264777640442767624787261123664329445104761444628793370749768181944155964633727433269903885710968672605938731293704459554363439349002563785235735712990772515041525464994359747041134212666010972857873
+@Log
+@Component
+public class RSAKeyProperties {
+
+    private static final String PUBLIC_KEY_FILE = "src/main/resources/certs/public-key.pem";
+    private static final String PRIVATE_KEY_FILE = "src/main/resources/certs/private-key.pem";
+
+    private RSAPublicKey publicKey;
+    private RSAPrivateKey privateKey;
+
+    public RSAKeyProperties() {
+        try {
+            if (keysExist()) {
+                loadKeys();
+            } else {
+                generateAndSaveKeys();
+            }
+        } catch (Exception e) {
+            log.severe("Failed to initialize RSA keys: " + e.getMessage());
+        }
+    }
+
+    private boolean keysExist() {
+        File publicKeyFile = new File(PUBLIC_KEY_FILE);
+        File privateKeyFile = new File(PRIVATE_KEY_FILE);
+        return publicKeyFile.exists() && privateKeyFile.exists();
+    }
+
+    private void loadKeys() throws Exception {
+        this.publicKey = (RSAPublicKey) loadKey(PUBLIC_KEY_FILE, true);
+        this.privateKey = (RSAPrivateKey) loadKey(PRIVATE_KEY_FILE, false);
+        log.info("RSA keys loaded from files.");
+    }
+
+    private void generateAndSaveKeys() throws Exception {
+        KeyPair pair = KeyGeneratorUtility.generateRsaKey();
+        this.publicKey = (RSAPublicKey) pair.getPublic();
+        this.privateKey = (RSAPrivateKey) pair.getPrivate();
+        saveKey(this.publicKey, PUBLIC_KEY_FILE);
+        saveKey(this.privateKey, PRIVATE_KEY_FILE);
+        log.info("RSA keys generated and saved to files.");
+    }
+
+    private void saveKey(Key key, String fileName) throws IOException {
+        byte[] keyBytes = key.getEncoded();
+        String keyString = Base64.getEncoder().encodeToString(keyBytes);
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
+            writer.write("-----BEGIN " + (key instanceof RSAPublicKey ? "PUBLIC" : "PRIVATE") + " KEY-----");
+            writer.newLine();
+            writer.write(keyString);
+            writer.newLine();
+            writer.write("-----END " + (key instanceof RSAPublicKey ? "PUBLIC" : "PRIVATE") + " KEY-----");
+        }
+    }
+
+    private Key loadKey(String fileName, boolean isPublicKey) throws Exception {
+        StringBuilder keyBuilder = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.startsWith("-----")) continue;
+                keyBuilder.append(line);
+            }
+        }
+        byte[] keyBytes = Base64.getDecoder().decode(keyBuilder.toString());
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        if (isPublicKey) {
+            X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
+            return keyFactory.generatePublic(spec);
+        } else {
+            PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
+            return keyFactory.generatePrivate(spec);
+        }
+    }
+
+    public RSAPublicKey getPublicKey() {
+        log.info(this.publicKey.toString());
+        return this.publicKey;
+    }
+
+    public void setPublicKey(RSAPublicKey publicKey) {
+        this.publicKey = publicKey;
+    }
+
+    public RSAPrivateKey getPrivateKey() {
+        log.info(this.privateKey.toString());
+        return this.privateKey;
+    }
+
+    public void setPrivateKey(RSAPrivateKey privateKey) {
+        this.privateKey = privateKey;
+    }
+}
+
+/*
+
+-----BEGIN PRIVATE KEY-----
+MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCtMczIU7/nao7B5gXnoQFONTw6yVUT2mYnZvkDSzKMbaV8w9YA4/IDCRFpo1jZe6gODyQPHfI4SdohNWzPGRjmuAOkXwgFfm4INPSxDFRcgm2t1U2FFbFD/ubxKm2sEPepHXdUKWXoU9+FUaQkgt4EhL2rPO1XApzXVNnaHBiSjjs8o8VCtA8KSfu45/WfRJYeCnejFkSWG/XxKbfcnPJQt7Gri2tfH2CfuskOlGcmb6mr29cI74rk6Wrg5JsziWHXtLOy7AwsfDSXbMyy9GmajAQIybRcgNOqobFP0Oe2gwfNotK5S19WrjvSGRCTMAWREpdKiHv7q/6uI0hGbQS7AgMBAAECggEANjm8WxBVqjfjoHPLb30qcnkadXFp0MB1cWq9FjnqBquhv5F1JGw57pddO0zoWZdsw5IcARuoJdWBlRosCh9ae4orocAbO9Uc0Db8UZ6Bn0E6480/6yYijR524hUdp1zcnbdbEB+yB26TMiOgl8ndh16kH8QAr1hjEMxBNRfM3b1jNRy1sbH74IV5eBwRqVudXhjU/c/SGLvpUnpuOOcYUyfGTBYjD+yBRAXpSXGH63nHJZwb8KuOJVQNrJ0rPBl2LKH0tDXpgCMm9P3EoUMEA+wpKOvA3V/V0eNYp3e6GdOFq9h6uXh1Y8AQUg6ISod/Ex+omIdsZxgQWL/C8TPF4QKBgQDzSsAfsrkTK9FWXEAj2m+i5Ww+ItYXv+MTqEA/OtCX4OwRDP44WxXq3xVppPd7CmCmB2/J1DozFlTu3E8mb6bOy7KC6XEkWL24FV+mrD7TiktGHB8PMcYwDo4rG43avtgxMNZ3RjMxMCeC9RnsW2uO5LBx5grpbGHK9Qvsm804UQKBgQC2PbiLMfBCdz0MC+1zwUwwXu4b39VhMVLYpfaACevHMGCgIm63zLXRHza0Xw9zHWwd3MyMZ2fXxveO6TzjoC6NIcpa7gC6tmEc7P0Yqe2NGAX9gJxmZbhw3BouBj6qFhoCBnUqh+cM8tgQ+0DcqnOii2l5HkYkM28WuwYR4ej1SwKBgQCmD8a1nCshf84icVNCZa2/dXN9sg+KJGrdlwFLZ1zL3jWjqce4NcvvBhg6hOR7cmjnyrmt/JNBHaQZaf0Ikjs8eeM94hNdKMlOZiBkxrsXbxTUJQu6NlI9qSG3INahkZRFdz1cKml00JaXl677Gqd+4G/jPo8CJv1VKA/cj7fzEQKBgQCPdrc4nO+O419jhGBBqAHacmDwAJ1yDeoyMzSCR00dWbA3X+PZPYZEQlZGWC9JZ/gc6hz8ysqsyy1Hi8UrTIZZBCjQvFxGoByDMO1t5Rfk4uyUTBLTaXBxKFRTtwbNzuhaf8rs2F/DickeVS0SifzOEQHPH04IYZUqR8DXgwhpUQKBgHCdJsiovLFS3LxAKLvWQhJx/w7A2h2rz5N8btJu3lvY4RgdEZwi7iE+Q2gnJ3ViL/ljp1A4bRk5oEhS6Y9Y6NygMCSTMnbCR/z/TCOG14LX0kjZf9jwHzGAIv/gfN6GlEzWhHZho9uwZKmNxQ6g2t/MjNfeEsXWHkAwse+T9JJ/
+-----END PRIVATE KEY-----
+
+ */
+
+/*
+
+-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArTHMyFO/52qOweYF56EBTjU8OslVE9pmJ2b5A0syjG2lfMPWAOPyAwkRaaNY2XuoDg8kDx3yOEnaITVszxkY5rgDpF8IBX5uCDT0sQxUXIJtrdVNhRWxQ/7m8SptrBD3qR13VCll6FPfhVGkJILeBIS9qzztVwKc11TZ2hwYko47PKPFQrQPCkn7uOf1n0SWHgp3oxZElhv18Sm33JzyULexq4trXx9gn7rJDpRnJm+pq9vXCO+K5Olq4OSbM4lh17SzsuwMLHw0l2zMsvRpmowECMm0XIDTqqGxT9DntoMHzaLSuUtfVq470hkQkzAFkRKXSoh7+6v+riNIRm0EuwIDAQAB
+-----END PUBLIC KEY-----
+
+ */

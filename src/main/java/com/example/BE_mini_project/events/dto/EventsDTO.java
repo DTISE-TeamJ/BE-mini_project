@@ -10,14 +10,12 @@ import java.time.LocalDateTime;
 public class EventsDTO {
     private Long id;
     private String name;
-    private LocalDateTime date;
-    private String start;
-    private String end;
+    private LocalDateTime start;
+    private LocalDateTime end;
     private String pic;
     private String organization;
     private String location;
     private String description;
-    private boolean isFree;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
@@ -29,14 +27,12 @@ public class EventsDTO {
     public EventsDTO(Events event) {
         this.id = event.getId();
         this.name = event.getName();
-        this.date = event.getDate() != null ? event.getDate().toLocalDateTime() : null;
-        this.start = event.getStart() != null ? String.valueOf(event.getStart()) : null;
-        this.end = event.getEnd() != null ? String.valueOf(event.getEnd()) : null;
+        this.start = event.getStart() != null ? LocalDateTime.parse(String.valueOf(event.getStart())) : null;
+        this.end = event.getEnd() != null ? LocalDateTime.parse(String.valueOf(event.getEnd())) : null;
         this.pic = event.getPic();
         this.organization = event.getOrganization();
         this.location = event.getLocation();
         this.description = event.getDescription();
-        this.isFree = event.getIsFree();
         this.createdAt = event.getCreatedAt() != null ? event.getCreatedAt().toLocalDateTime() : null;
         this.updatedAt = event.getUpdatedAt() != null ? event.getUpdatedAt().toLocalDateTime() : null;
         this.deletedAt = event.getDeletedAt() != null ? event.getDeletedAt().toLocalDateTime() : null;
