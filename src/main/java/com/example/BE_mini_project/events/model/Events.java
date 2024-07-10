@@ -4,7 +4,7 @@ import com.example.BE_mini_project.authentication.model.Users;
 import com.example.BE_mini_project.ticket.model.TicketType;
 import jakarta.persistence.*;
 import java.sql.Timestamp;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 import java.util.Set;
 
 @Entity
@@ -15,17 +15,17 @@ public class Events {
     private Long id;
 
     private String name;
-    private Timestamp date;
-    private LocalTime start;
+    @Column(name = "start_date")
+    private LocalDateTime startDate;
 
-    @Column(name = "\"end\"") // Escaping reserved keyword "end"
-    private LocalTime end;
+    @Column(name = "end_date")
+    private LocalDateTime endDate;
 
     private String pic;
     private String organization;
     private String location;
     private String description;
-    private Boolean isFree;
+//    private Boolean isFree;
 
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
@@ -63,28 +63,20 @@ public class Events {
         this.name = name;
     }
 
-    public Timestamp getDate() {
-        return date;
+    public LocalDateTime getStart() {
+        return startDate;
     }
 
-    public void setDate(Timestamp date) {
-        this.date = date;
+    public void setStart(LocalDateTime startDate) {
+        this.startDate = startDate;
     }
 
-    public LocalTime getStart() {
-        return start;
+    public LocalDateTime getEnd() {
+        return endDate;
     }
 
-    public void setStart(LocalTime start) {
-        this.start = start;
-    }
-
-    public LocalTime getEnd() {
-        return end;
-    }
-
-    public void setEnd(LocalTime end) {
-        this.end = end;
+    public void setEnd(LocalDateTime endDate) {
+        this.endDate = endDate;
     }
 
     public String getPic() {
@@ -117,14 +109,6 @@ public class Events {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public Boolean getIsFree() {
-        return isFree;
-    }
-
-    public void setIsFree(Boolean isFree) {
-        this.isFree = isFree;
     }
 
     public Users getUser() {

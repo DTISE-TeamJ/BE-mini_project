@@ -19,13 +19,13 @@ public interface EventRepository extends JpaRepository<Events, Long> {
 //    List<Events> findByOrganizationAndDateBetween(String organization, Timestamp startDate, Timestamp endDate);
 //    List<Events> findByLocationAndOrganizationAndDateBetween(String location, String organization, Timestamp startDate, Timestamp endDate);
 
-    @Query("SELECT e FROM Events e WHERE " +
-            "(:location IS NULL OR e.location = :location) AND " +
-            "(:organization IS NULL OR e.organization = :organization) AND " +
-            "(:startDate IS NULL OR e.date >= :startDate) AND " +
-            "(:endDate IS NULL OR e.date <= :endDate)")
-    List<Events> findByFilters(@Param("location") String location,
-                               @Param("organization") String organization,
-                               @Param("startDate") Timestamp startDate,
-                               @Param("endDate") Timestamp endDate);
+//    @Query("SELECT e FROM Events e WHERE " +
+//            "(:location IS NULL OR e.location = :location) AND " +
+//            "(:organization IS NULL OR e.organization = :organization) AND " +
+//            "(:startDate IS NULL) AND " +
+//            "(:endDate IS NULL)")
+//    List<Events> findByFilters(@Param("location") String location,
+//                               @Param("organization") String organization,
+//                               @Param("startDate") Timestamp startDate,
+//                               @Param("endDate") Timestamp endDate);
 }
