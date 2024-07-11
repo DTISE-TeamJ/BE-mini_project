@@ -11,21 +11,10 @@ import java.util.List;
 
 @Repository
 public interface EventRepository extends JpaRepository<Events, Long> {
-//    List<Events> findByLocation(String location);
-//    List<Events> findByDateBetween(Timestamp startDate, Timestamp endDate);
-//    List<Events> findByOrganization(String organization);
-//    List<Events> findByLocationAndOrganization(String location, String organization);
-//    List<Events> findByLocationAndDateBetween(String location, Timestamp startDate, Timestamp endDate);
-//    List<Events> findByOrganizationAndDateBetween(String organization, Timestamp startDate, Timestamp endDate);
-//    List<Events> findByLocationAndOrganizationAndDateBetween(String location, String organization, Timestamp startDate, Timestamp endDate);
-
-//    @Query("SELECT e FROM Events e WHERE " +
-//            "(:location IS NULL OR e.location = :location) AND " +
-//            "(:organization IS NULL OR e.organization = :organization) AND " +
-//            "(:startDate IS NULL) AND " +
-//            "(:endDate IS NULL)")
-//    List<Events> findByFilters(@Param("location") String location,
-//                               @Param("organization") String organization,
-//                               @Param("startDate") Timestamp startDate,
-//                               @Param("endDate") Timestamp endDate);
+    @Query("SELECT e FROM Events e " +
+            "WHERE (:location IS NULL OR e.location LIKE %:location%) " +
+            "AND (:name IS NULL OR e.name LIKE %:name%) " +
+            "AND (:organization IS NULL OR e.organization LIKE %:organization%) " +
+            "AND (:description IS NULL OR e.description LIKE %:description%)")
+    List<Events> findByCriteria(String location, String name, String organization, String description);
 }
