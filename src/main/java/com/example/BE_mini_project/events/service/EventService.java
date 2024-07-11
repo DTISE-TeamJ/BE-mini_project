@@ -92,6 +92,12 @@ public class EventService {
                 .collect(Collectors.toList());
     }
 
+    public EventsDTO getEventById(Long id) {
+        return eventRepository.findById(id)
+                .map(event -> new EventsDTO(event)) // Assuming you have a constructor in EventsDTO that accepts an Event entity
+                .orElseThrow(() -> new ResourceNotFoundException("Event not found with id " + id));
+    }
+
     public EventsDTO updateEvent(Long id, MultipartFile file, UpdateEventDTO updateEventDTO) {
         // Fetch the existing event
         Events event = eventRepository.findById(id)
@@ -154,11 +160,10 @@ public class EventService {
         }
     }
 
-//    public List<EventsDTO> getEventsByFilters(String location, String organization, LocalDateTime startDate, LocalDateTime endDate) {
-//        Timestamp startTimestamp = startDate != null ? Timestamp.valueOf(startDate) : null;
-//        Timestamp endTimestamp = endDate != null ? Timestamp.valueOf(endDate) : null;
-//
-//        List<Events> events = eventRepository.findByFilters(location, organization, startTimestamp, endTimestamp);
-//        return events.stream().map(EventsDTO::new).collect(Collectors.toList());
-//    }
+    public List<EventsDTO> searchEvents(String location, String name, String organization, String description) {
+        List<Events> events = eventRepository.findByCriteria(location, name, organization, description);
+        return events.stream()
+                .map(EventsDTO::new)
+                .collect(Collectors.toList());
+    }
 }

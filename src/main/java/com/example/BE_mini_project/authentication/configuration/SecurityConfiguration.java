@@ -75,7 +75,16 @@ public class SecurityConfiguration {
                     auth.requestMatchers("/api/v1/events/create-event/**").hasRole("ADMIN"); // Restrict POST /events to ADMIN
                     auth.requestMatchers("/api/v1/events/edit-event/**").hasRole("ADMIN"); // Restrict PUT /events to ADMIN
                     auth.requestMatchers("/api/v1/events/delete-event/**").hasRole("ADMIN"); // Restrict DELETE /events to ADMIN
-                    auth.requestMatchers("/api/v1/events/all-events/**").hasAnyRole("ADMIN", "USER");
+//                    auth.requestMatchers("/api/v1/events/delete-event/**").permitAll(); // Restrict DELETE /events to ADMIN
+//                    auth.requestMatchers("/api/v1/events/**").hasAnyRole("ADMIN", "USER");
+                    auth.requestMatchers("/api/v1/events/**").permitAll();
+
+                    // add events detail
+                    auth.requestMatchers("/api/v1/events/{id}/**").hasAnyRole("ADMIN", "USER");
+
+                    // search events
+                    auth.requestMatchers("/api/v1/events/search/**").permitAll();
+
                     auth.requestMatchers("/api/v1/events/search-events/**").hasAnyRole("ADMIN", "USER");
                     auth.requestMatchers("/api/v1/ticket-types/**").hasAnyRole("ADMIN", "USER");
                     auth.requestMatchers("/api/v1/ticket-types/update/**").hasRole("ADMIN");
@@ -90,12 +99,6 @@ public class SecurityConfiguration {
 
                     auth.anyRequest().authenticated();
                 })
-//                .oauth2ResourceServer((oauth2) ->
-//                        oauth2
-//                        .jwt(jwt -> jwt
-//                                .jwtAuthenticationConverter(jwtAuthenticationConverter())
-//                        )
-//                )
                 .oauth2ResourceServer((oauth2) -> {
                     oauth2.jwt(jwt -> {
                         jwt.jwtAuthenticationConverter(jwtAuthenticationConverter());

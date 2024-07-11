@@ -61,6 +61,20 @@ public class EventController {
         return customResponse.toResponseEntity();
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<CustomResponse<EventsDTO>> getEventById(@PathVariable Long id) {
+        EventsDTO eventDTO = eventService.getEventById(id);
+
+        CustomResponse<EventsDTO> customResponse = new CustomResponse<>(
+                HttpStatus.OK,
+                "Success",
+                "Event Detail fetched successfully",
+                eventDTO
+        );
+
+        return customResponse.toResponseEntity();
+    }
+
     @PutMapping(value = "/edit-event/{id}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<CustomResponse<EventsDTO>> updateEvent(
             @PathVariable Long id,
@@ -95,29 +109,23 @@ public class EventController {
         return customResponse.toResponseEntity();
     }
 
-//    @GetMapping("/search-events")
-//    public ResponseEntity<CustomResponse<List<EventsDTO>>> getEventsByFilters(
-//            @RequestParam(required = false) String location,
-//            @RequestParam(required = false) String organization,
-//            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
-//            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
-//
-//        List<EventsDTO> events;
-//
-//        if (location == null && organization == null && startDate == null && endDate == null) {
-//            events = eventService.getAllEvents();
-//        } else {
-//            events = eventService.getEventsByFilters(location, organization, startDate, endDate);
-//        }
-//
-//        CustomResponse<List<EventsDTO>> customResponse = new CustomResponse<>(
-//                HttpStatus.OK,
-//                "Success",
-//                "Events retrieved successfully",
-//                events
-//        );
-//
-//        return customResponse.toResponseEntity();
-//    }
+    @GetMapping("/search")
+    public ResponseEntity<CustomResponse<List<EventsDTO>>> searchEvents(
+            @RequestParam(value = "location", required = false) String location,
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "organization", required = false) String organization,
+            @RequestParam(value = "description", required = false) String description) {
+
+        List<EventsDTO> events = eventService.searchEvents(location, name, organization, description);
+
+        CustomResponse<List<EventsDTO>> customResponse = new CustomResponse<>(
+                HttpStatus.OK,
+                "Success",
+                "Events fetched successfully",
+                events
+        );
+
+        return customResponse.toResponseEntity();
+    }
 
 }
