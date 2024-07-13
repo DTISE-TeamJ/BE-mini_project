@@ -69,6 +69,20 @@ public class EventController {
         return customResponse.toResponseEntity();
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<CustomResponse<EventsDTO>> getEventById(@PathVariable Long id) {
+        EventsDTO eventDTO = eventService.getEventById(id);
+
+        CustomResponse<EventsDTO> customResponse = new CustomResponse<>(
+                HttpStatus.OK,
+                "Success",
+                "Event Detail fetched successfully",
+                eventDTO
+        );
+
+        return customResponse.toResponseEntity();
+    }
+
     @PutMapping(value = "/edit-event/{id}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<CustomResponse<EventsDTO>> updateEvent(
             @PathVariable Long id,

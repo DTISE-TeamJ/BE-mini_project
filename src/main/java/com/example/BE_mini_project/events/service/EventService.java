@@ -98,6 +98,12 @@ public class EventService {
                 .collect(Collectors.toList());
     }
 
+    public EventsDTO getEventById(Long id) {
+        return eventRepository.findById(id)
+                .map(event -> new EventsDTO(event)) // Assuming you have a constructor in EventsDTO that accepts an Event entity
+                .orElseThrow(() -> new ResourceNotFoundException("Event not found with id " + id));
+    }
+
     public EventsDTO updateEvent(Long id, MultipartFile file, UpdateEventDTO updateEventDTO) {
         // Fetch the existing event
         Events event = eventRepository.findById(id)
