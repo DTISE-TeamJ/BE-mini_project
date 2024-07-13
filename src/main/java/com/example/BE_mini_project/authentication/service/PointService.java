@@ -4,6 +4,7 @@ import com.example.BE_mini_project.authentication.dto.PaymentResult;
 import com.example.BE_mini_project.authentication.model.Point;
 import com.example.BE_mini_project.authentication.repository.PointRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -31,17 +32,14 @@ public class PointService {
 
         for (Point point : availablePoints) {
             if (remainingAmount <= 0) break;
-
             int pointsToUse = Math.min(point.getPoints(), (int) Math.ceil(remainingAmount));
             pointsUsed += pointsToUse;
             remainingAmount -= pointsToUse;
-
             point.setPoints(point.getPoints() - pointsToUse);
             updatedPoints.add(point);
         }
 
         pointRepository.saveAll(updatedPoints);
-
-        return new PaymentResult(pointsUsed, remainingAmount);
+        return new PaymentResult(pointsUsed, amount - remainingAmount);
     }
 }

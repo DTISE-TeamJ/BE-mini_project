@@ -3,8 +3,9 @@ package com.example.BE_mini_project.events.service;
 import com.example.BE_mini_project.authentication.model.Users;
 import com.example.BE_mini_project.events.dto.CreateEventDTO;
 import com.example.BE_mini_project.events.dto.EventsDTO;
+import com.example.BE_mini_project.events.dto.TicketTypeDTO;
 import com.example.BE_mini_project.events.dto.UpdateEventDTO;
-import com.example.BE_mini_project.events.mapper.TicketTypeMapper;
+import com.example.BE_mini_project.events.mapper.EventMapper;
 import com.example.BE_mini_project.events.model.EventCategory;
 import com.example.BE_mini_project.events.model.Events;
 import com.example.BE_mini_project.events.model.Promo;
@@ -12,11 +13,14 @@ import com.example.BE_mini_project.events.model.TicketType;
 import com.example.BE_mini_project.events.repository.EventCategoryRepository;
 import com.example.BE_mini_project.events.repository.EventRepository;
 import com.example.BE_mini_project.authentication.repository.UsersRepository;
+import com.example.BE_mini_project.events.repository.EventSpecification;
 import jakarta.transaction.Transactional;
 import org.apache.velocity.exception.ResourceNotFoundException;
+import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import java.sql.Timestamp;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,14 +38,16 @@ public class EventService {
     private final CloudinaryService cloudinaryService;
     private final TicketService ticketService;
     private final PromoService promoService;
+    private final EventMapper eventMapper;
 
-    public EventService (EventRepository eventRepository, UsersRepository usersRepository, EventCategoryRepository eventCategoryRepository, CloudinaryService cloudinaryService, TicketService ticketService, PromoService promoService) {
+    public EventService (EventRepository eventRepository, UsersRepository usersRepository, EventCategoryRepository eventCategoryRepository, CloudinaryService cloudinaryService, TicketService ticketService, PromoService promoService, EventMapper eventMapper) {
         this.eventRepository = eventRepository;
         this.usersRepository = usersRepository;
         this.eventCategoryRepository = eventCategoryRepository;
         this.cloudinaryService = cloudinaryService;
         this.ticketService = ticketService;
         this.promoService = promoService;
+        this.eventMapper = eventMapper;
     }
 
     @Transactional
@@ -111,22 +117,22 @@ public class EventService {
         }
 
         // Update event details
-        if (updateEventDTO.getName() != null) {
+        if (updateEventDTO.getName() != null && !updateEventDTO.getName().trim().isEmpty()) {
             event.setName(updateEventDTO.getName());
         }
-        if (updateEventDTO.getStart() != null) {
+        if (updateEventDTO.getStart() != null && !updateEventDTO.getStart().trim().isEmpty()) {
             event.setStart(LocalDateTime.parse(updateEventDTO.getStart()));
         }
-        if (updateEventDTO.getEnd() != null) {
+        if (updateEventDTO.getEnd() != null && !updateEventDTO.getEnd().trim().isEmpty()) {
             event.setEnd(LocalDateTime.parse(updateEventDTO.getEnd()));
         }
-        if (updateEventDTO.getOrganization() != null) {
+        if (updateEventDTO.getOrganization() != null && !updateEventDTO.getOrganization().trim().isEmpty()) {
             event.setOrganization(updateEventDTO.getOrganization());
         }
-        if (updateEventDTO.getLocation() != null) {
+        if (updateEventDTO.getLocation() != null && !updateEventDTO.getLocation().trim().isEmpty()) {
             event.setLocation(updateEventDTO.getLocation());
         }
-        if (updateEventDTO.getDescription() != null) {
+        if (updateEventDTO.getDescription() != null && !updateEventDTO.getDescription().trim().isEmpty()) {
             event.setDescription(updateEventDTO.getDescription());
         }
 
@@ -160,10 +166,66 @@ public class EventService {
         }
     }
 
-    public List<EventsDTO> searchEvents(String location, String name, String organization, String description) {
-        List<Events> events = eventRepository.findByCriteria(location, name, organization, description);
-        return events.stream()
-                .map(EventsDTO::new)
+    public Page<EventsDTO> searchEvents(String keyword, String categoryName, String location,
+                                        LocalDateTime startDate, LocalDateTime endDate,
+                                        Double minPrice, Double maxPrice,
+                                        Pageable pageable) {
+        Specification<Events> spec = Specification.where(EventSpecification.isNotDeleted())
+                .and(EventSpecification.searchByKeyword(keyword))
+                .and(EventSpecification.hasCategory(categoryName))
+                .and(EventSpecification.hasLocation(location))
+                .and(EventSpecification.dateRangeBetween(startDate, endDate))
+                .and(EventSpecification.priceRangeBetween(minPrice, maxPrice));
+
+        Sort sort = pageable.getSort();
+        Sort.Order priceOrder = sort.getOrderFor("price");
+        List<Sort.Order> orders = new ArrayList<>();
+
+        for (Sort.Order order : sort) {
+            if (!order.getProperty().equals("price")) {
+                orders.add(order);
+            }
+        }
+
+        if (orders.isEmpty()) {
+            orders.add(Sort.Order.asc("id"));
+        }
+
+        Sort newSort = Sort.by(orders);
+
+        Pageable newPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), newSort);
+
+        Page<Events> eventsPage = eventRepository.findAll(spec, newPageable);
+
+        List<EventsDTO> eventsDTOs = eventsPage.getContent().stream()
+                .map(eventMapper::toDTO)
                 .collect(Collectors.toList());
+
+        if (priceOrder != null) {
+            eventsDTOs.sort((e1, e2) -> {
+                double price1 = priceOrder.getDirection() == Sort.Direction.ASC ?
+                        getMinPrice(e1) : getMaxPrice(e1);
+                double price2 = priceOrder.getDirection() == Sort.Direction.ASC ?
+                        getMinPrice(e2) : getMaxPrice(e2);
+                return priceOrder.getDirection() == Sort.Direction.ASC ?
+                        Double.compare(price1, price2) : Double.compare(price2, price1);
+            });
+        }
+
+        return new PageImpl<>(eventsDTOs, pageable, eventsPage.getTotalElements());
+    }
+
+    private double getMinPrice(EventsDTO event) {
+        return event.getTicketTypes().stream()
+                .mapToDouble(TicketTypeDTO::getPrice)
+                .min()
+                .orElse(Double.MAX_VALUE);
+    }
+
+    private double getMaxPrice(EventsDTO event) {
+        return event.getTicketTypes().stream()
+                .mapToDouble(TicketTypeDTO::getPrice)
+                .max()
+                .orElse(0.0);
     }
 }

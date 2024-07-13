@@ -1,18 +1,18 @@
 package com.example.BE_mini_project.transaction.controller;
 
 import com.example.BE_mini_project.response.CustomResponse;
-import com.example.BE_mini_project.transaction.dto.AddOrderItemRequest;
-import com.example.BE_mini_project.transaction.dto.AdjustQuantityRequest;
-import com.example.BE_mini_project.transaction.dto.OrderDTO;
-import com.example.BE_mini_project.transaction.dto.ProcessPaymentRequest;
+import com.example.BE_mini_project.transaction.dto.*;
 import com.example.BE_mini_project.transaction.exception.OrderNotFoundException;
-import com.example.BE_mini_project.transaction.mapper.OrderMapperManual;
+import com.example.BE_mini_project.transaction.model.PaymentMethod;
 import com.example.BE_mini_project.transaction.service.OrdersService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/orders")
@@ -24,30 +24,39 @@ public class OrdersController {
     }
 
     @PostMapping("/add-item")
-    public ResponseEntity<OrderDTO> addOrderItem(@RequestBody AddOrderItemRequest request) {
+    public ResponseEntity<CustomResponse<OrderDTO>> addOrderItem(@RequestBody AddOrderItemRequest request) {
         OrderDTO orderDTO = ordersService.addOrderItem(request);
-        return ResponseEntity.ok(orderDTO);
+        CustomResponse<OrderDTO> response = new CustomResponse<>(
+                HttpStatus.OK,
+                "Success",
+                "Order item added successfully",
+                orderDTO
+        );
+        return response.toResponseEntity();
     }
 
     @PutMapping("/adjust-quantity")
-    public ResponseEntity<OrderDTO> adjustOrderItemQuantity(@RequestBody AdjustQuantityRequest request) {
+    public ResponseEntity<CustomResponse<OrderDTO>> adjustOrderItemQuantity(@RequestBody AdjustQuantityRequest request) {
         OrderDTO orderDTO = ordersService.adjustOrderItemQuantity(request);
-        return ResponseEntity.ok(orderDTO);
+        CustomResponse<OrderDTO> response = new CustomResponse<>(
+                HttpStatus.OK,
+                "Success",
+                "Order item quantity adjusted successfully",
+                orderDTO
+        );
+        return response.toResponseEntity();
     }
 
-    @PostMapping("/{orderId}/process-payment")
-    public ResponseEntity<CustomResponse<String>> processPayment(@PathVariable Long orderId,
-                                                                 @RequestBody ProcessPaymentRequest request) {
+    @PostMapping("/process-payment")
+    public ResponseEntity<CustomResponse<String>> processPayment(@RequestBody ProcessPaymentRequest request) {
         try {
-            ordersService.processPayments(orderId, request.getUserId(), request.getPaymentDetails(), request.getPromoId());
-
+            ordersService.processPayments(request.getUserId(), request.getOrderId(), request.getPaymentDetails());
             CustomResponse<String> response = new CustomResponse<>(
                     HttpStatus.OK,
                     "Success",
                     "Payment processed successfully",
                     "Transaction completed"
             );
-
             return response.toResponseEntity();
         } catch (RuntimeException e) {
             CustomResponse<String> errorResponse = new CustomResponse<>(
@@ -56,36 +65,85 @@ public class OrdersController {
                     e.getMessage(),
                     null
             );
-
             return errorResponse.toResponseEntity();
         }
     }
 
     @GetMapping("/unpaid/{userId}")
-    public ResponseEntity<?> getUnpaidOrders(@PathVariable Long userId) {
+    public ResponseEntity<CustomResponse<List<OrderDTO>>> getUnpaidOrders(@PathVariable Long userId) {
         try {
             List<OrderDTO> unpaidOrderDTOs = ordersService.getUnpaidOrdersByUserId(userId);
-            return ResponseEntity.ok(unpaidOrderDTOs);
+            CustomResponse<List<OrderDTO>> response = new CustomResponse<>(
+                    HttpStatus.OK,
+                    "Success",
+                    "Unpaid orders retrieved successfully",
+                    unpaidOrderDTOs
+            );
+            return response.toResponseEntity();
         } catch (OrderNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            CustomResponse<List<OrderDTO>> errorResponse = new CustomResponse<>(
+                    HttpStatus.NOT_FOUND,
+                    "Error",
+                    e.getMessage(),
+                    null
+            );
+            return errorResponse.toResponseEntity();
         }
     }
 
     @GetMapping("/paid/{userId}")
-    public ResponseEntity<?> getPaidOrders(@PathVariable Long userId) {
+    public ResponseEntity<CustomResponse<List<OrderDTO>>> getPaidOrders(@PathVariable Long userId) {
         try {
             List<OrderDTO> paidOrderDTOs = ordersService.getPaidOrdersByUserId(userId);
-            return ResponseEntity.ok(paidOrderDTOs);
+            CustomResponse<List<OrderDTO>> response = new CustomResponse<>(
+                    HttpStatus.OK,
+                    "Success",
+                    "Paid orders retrieved successfully",
+                    paidOrderDTOs
+            );
+            return response.toResponseEntity();
         } catch (OrderNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            CustomResponse<List<OrderDTO>> errorResponse = new CustomResponse<>(
+                    HttpStatus.NOT_FOUND,
+                    "Error",
+                    e.getMessage(),
+                    null
+            );
+            return errorResponse.toResponseEntity();
         }
     }
 
-//    @PutMapping("/apply-promo")
-//    public ResponseEntity<OrderDTO> applyPromo(@RequestParam Long orderId,
-//                                               @RequestParam Long orderItemId,
-//                                               @RequestParam Long promoId) {
-//        OrderDTO updatedOrder = orderService.applyPromoToOrderItem(orderId, orderItemId, promoId);
-//        return ResponseEntity.ok(updatedOrder);
-//    }
+    @PostMapping("/apply-promo")
+    public ResponseEntity<CustomResponse<OrderDTO>> applyPromoCode(@RequestBody ApplyPromoRequest request) {
+        OrderDTO updatedOrder = ordersService.applyPromoCode(request.getOrderId(), request.getEventId(), request.getPromoCode(), request.getUserId());
+        CustomResponse<OrderDTO> response = new CustomResponse<>(
+                HttpStatus.OK,
+                "Success",
+                "Promo code applied successfully",
+                updatedOrder
+        );
+        return response.toResponseEntity();
+    }
+
+    @PostMapping("/remove-promo")
+    public ResponseEntity<CustomResponse<OrderDTO>> removePromo(@RequestBody RemovePromoRequest request) {
+        OrderDTO updatedOrder = ordersService.removePromoCode(request.getOrderId(), request.getEventId());
+        CustomResponse<OrderDTO> response = new CustomResponse<>(
+                HttpStatus.OK,
+                "Success",
+                "Promo code removed successfully",
+                updatedOrder
+        );
+        return response.toResponseEntity();
+    }
+
+    @GetMapping("/payment-methods")
+    public List<Map<String, String>> getPaymentMethods() {
+        return Arrays.stream(PaymentMethod.values())
+                .map(method -> Map.of(
+                        "name", method.name(),
+                        "displayName", method.getDisplayName()
+                ))
+                .collect(Collectors.toList());
+    }
 }

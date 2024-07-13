@@ -9,6 +9,8 @@ public class OrderDTO {
     private Long id;
     private Long userId;
     private List<OrderItemDTO> orderItems;
-    private double finalPrice;
+    private Double finalPrice;
+    private Double totalOriginalPrice;
+//    private Double totalDiscountedPrice;
     private boolean paid;
 }

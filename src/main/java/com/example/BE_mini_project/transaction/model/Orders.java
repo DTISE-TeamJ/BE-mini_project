@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.ColumnDefault;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,4 +35,14 @@ public class Orders {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<Payment> payments = new ArrayList<>();
 
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(name = "paid_at")
+    private LocalDateTime paidAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
 }

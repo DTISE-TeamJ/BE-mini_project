@@ -62,13 +62,13 @@ public class TicketService {
         TicketType existingTicketType = ticketTypeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("TicketType not found with id: " + id));
 
-        if (updatedTicketTypeDTO.getName() != null) {
+        if (updatedTicketTypeDTO.getName() != null && !updatedTicketTypeDTO.getName().trim().isEmpty()) {
             existingTicketType.setName(updatedTicketTypeDTO.getName());
         }
-        if (updatedTicketTypeDTO.getPrice() != null) {
+        if (updatedTicketTypeDTO.getPrice() != null && updatedTicketTypeDTO.getPrice() >= 0) {
             existingTicketType.setPrice(updatedTicketTypeDTO.getPrice());
         }
-        if (updatedTicketTypeDTO.getQuantity() != null) {
+        if (updatedTicketTypeDTO.getQuantity() != null && updatedTicketTypeDTO.getQuantity() >= 0) {
             existingTicketType.setQuantity(updatedTicketTypeDTO.getQuantity());
         }
 

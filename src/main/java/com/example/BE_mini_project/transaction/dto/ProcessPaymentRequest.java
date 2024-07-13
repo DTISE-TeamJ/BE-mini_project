@@ -10,6 +10,6 @@ import java.util.Map;
 @AllArgsConstructor
 public class ProcessPaymentRequest {
     private Long userId;
+    private Long orderId;
     private Map<PaymentMethod, Double> paymentDetails;
-    private Long promoId;
 }

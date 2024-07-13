@@ -1,13 +1,15 @@
 package com.example.BE_mini_project.authentication.model;
 
-import com.example.BE_mini_project.events.model.Promo;
+import com.example.BE_mini_project.transaction.model.PromoUsage;
 import jakarta.persistence.*;
+import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import java.sql.Timestamp;
 import java.util.*;
 
 @Entity
+@Data
 @Table(name = "users")
 
 public class Users implements UserDetails {
@@ -60,6 +62,9 @@ public class Users implements UserDetails {
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private Discount discount;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<PromoUsage> promoUsages = new ArrayList<>();
 
 //    @ManyToMany
 //    @JoinTable(

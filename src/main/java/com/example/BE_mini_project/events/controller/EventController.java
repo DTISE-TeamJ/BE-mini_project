@@ -3,15 +3,23 @@ package com.example.BE_mini_project.events.controller;
 import com.example.BE_mini_project.events.dto.CreateEventDTO;
 import com.example.BE_mini_project.events.dto.EventsDTO;
 import com.example.BE_mini_project.events.dto.UpdateEventDTO;
+import com.example.BE_mini_project.events.exception.EventNotFoundException;
 import com.example.BE_mini_project.events.service.EventService;
 import com.example.BE_mini_project.response.CustomResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -110,21 +118,30 @@ public class EventController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<CustomResponse<List<EventsDTO>>> searchEvents(
-            @RequestParam(value = "location", required = false) String location,
-            @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "organization", required = false) String organization,
-            @RequestParam(value = "description", required = false) String description) {
+    public ResponseEntity<CustomResponse<Page<EventsDTO>>> searchEvents(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String categoryName,
+            @RequestParam(required = false) String location,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice,
+            @PageableDefault(size = 20, sort = "startDate") Pageable pageable) {
 
-        List<EventsDTO> events = eventService.searchEvents(location, name, organization, description);
+        Page<EventsDTO> events = eventService.searchEvents(keyword, categoryName, location,
+                startDate, endDate, minPrice, maxPrice,
+                pageable);
 
-        CustomResponse<List<EventsDTO>> customResponse = new CustomResponse<>(
+        if (events.isEmpty()) {
+            throw new EventNotFoundException("No events found matching the criteria");
+        }
+
+        CustomResponse<Page<EventsDTO>> customResponse = new CustomResponse<>(
                 HttpStatus.OK,
                 "Success",
-                "Events fetched successfully",
+                "Events retrieved successfully",
                 events
         );
-
         return customResponse.toResponseEntity();
     }
 

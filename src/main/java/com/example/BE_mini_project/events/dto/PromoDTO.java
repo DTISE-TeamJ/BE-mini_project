@@ -14,8 +14,10 @@ import java.time.LocalDateTime;
 public class PromoDTO {
     private String name;
     private PromoType promoType;
+    private String promoTypeDisplayName;
     private Integer discount;
     private Integer quantity;
+    private String promoCode;
 
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     private LocalDateTime startValid;
@@ -26,9 +28,15 @@ public class PromoDTO {
     public PromoDTO(Promo promo) {
         this.name = promo.getName();
         this.promoType = promo.getPromoType();
+        this.promoTypeDisplayName = promo.getPromoType() != null ? promo.getPromoType().getDisplayName() : null;
         this.discount = promo.getDiscount();
         this.quantity = promo.getQuantity();
+        this.promoCode = promo.getPromoCode();
         this.startValid = promo.getStartValid();
         this.endValid = promo.getEndValid();
+    }
+
+    public String getPromoTypeDisplayName() {
+        return promoType != null ? promoType.getDisplayName() : null;
     }
 }

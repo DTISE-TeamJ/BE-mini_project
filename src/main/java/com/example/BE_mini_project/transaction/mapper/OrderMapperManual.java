@@ -20,8 +20,14 @@ public class OrderMapperManual {
         OrderDTO dto = new OrderDTO();
         dto.setId(order.getId());
         dto.setUserId(Long.valueOf(order.getUser().getId()));
-        dto.setFinalPrice(order.getFinalPrice());
+//        dto.setFinalPrice(order.getFinalPrice());
         dto.setPaid(order.isPaid());
+        dto.setTotalOriginalPrice(order.getOrderItems().stream()
+                .mapToDouble(OrderItem::getOriginalPrice)
+                .sum());
+        dto.setFinalPrice(order.getOrderItems().stream()
+                .mapToDouble(item -> item.getAppliedPromo() != null ? item.getDiscountedPrice() : item.getOriginalPrice())
+                .sum());
 
         List<OrderItemDTO> orderItemDTOs = getOrderItemDTOS(order);
         dto.setOrderItems(orderItemDTOs);
@@ -37,8 +43,10 @@ public class OrderMapperManual {
             itemDTO.setTicketTypeId(item.getTicketType().getId());
             itemDTO.setTicketName(item.getTicketType().getName());
             itemDTO.setQuantity(item.getQuantity());
-            itemDTO.setTicketTotalPrice(item.getTicketTotalPrice());
-//            itemDTO.setEventName(item.getTicketType().getEvent().getName());
+            itemDTO.setOriginalPrice(item.getOriginalPrice());
+            itemDTO.setDiscountedPrice(item.getDiscountedPrice());
+            itemDTO.setAppliedPromoCode(item.getAppliedPromo() != null ? item.getAppliedPromo().getPromoCode() : null);
+            itemDTO.setEventName(item.getTicketType().getEvent().getName());
             orderItemDTOs.add(itemDTO);
         }
         return orderItemDTOs;

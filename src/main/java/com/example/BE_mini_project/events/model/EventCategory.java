@@ -1,8 +1,12 @@
 package com.example.BE_mini_project.events.model;
 
 import jakarta.persistence.*;
+import lombok.Data;
+
+import java.util.List;
 
 @Entity
+@Data
 @Table(name = "event_category")
 public class EventCategory {
     @Id
@@ -11,20 +15,7 @@ public class EventCategory {
 
     private String name;
 
-    // Getters and Setters
-    public Long getId() {
-        return id;
-    }
+    @OneToMany(mappedBy = "eventCategory", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Events> events;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 }
