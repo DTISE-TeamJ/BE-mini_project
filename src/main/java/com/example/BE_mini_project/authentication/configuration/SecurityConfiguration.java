@@ -75,12 +75,14 @@ public class SecurityConfiguration {
                     auth.requestMatchers("/api/v1/events/create-event/**").hasRole("ADMIN"); // Restrict POST /events to ADMIN
                     auth.requestMatchers("/api/v1/events/edit-event/**").hasRole("ADMIN"); // Restrict PUT /events to ADMIN
                     auth.requestMatchers("/api/v1/events/delete-event/**").hasRole("ADMIN"); // Restrict DELETE /events to ADMIN
-                    auth.requestMatchers("/api/v1/events/**").hasAnyRole("ADMIN", "USER");
+                    auth.requestMatchers("/api/v1/events/**").permitAll();
                     auth.requestMatchers("/api/v1/ticket-types/update/**").hasRole("ADMIN");
                     auth.requestMatchers("/api/v1/ticket-types/delete/**").hasRole("ADMIN");
+                    auth.requestMatchers("/api/v1/ticket-types").permitAll();
                     auth.requestMatchers("/api/v1/ticket-types/**").hasAnyRole("ADMIN", "USER");
                     auth.requestMatchers("/api/v1/promos/update/**").hasRole("ADMIN");
                     auth.requestMatchers("/api/v1/promos/delete/**").hasRole("ADMIN");
+                    auth.requestMatchers("/api/v1/promos").permitAll();
                     auth.requestMatchers("/api/v1/promos/**").hasAnyRole("ADMIN", "USER");
                     auth.requestMatchers("/api/v1/orders/add-item/**").hasRole("USER");
                     auth.requestMatchers("/api/v1/orders/adjust-quantity/**").hasRole("USER");
