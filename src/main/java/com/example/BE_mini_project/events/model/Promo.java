@@ -1,6 +1,8 @@
 package com.example.BE_mini_project.events.model;
 
 import com.example.BE_mini_project.authentication.model.Users;
+import com.example.BE_mini_project.transaction.model.OrderItem;
+import com.example.BE_mini_project.transaction.model.PromoUsage;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.ColumnDefault;
@@ -16,8 +18,8 @@ import java.util.Set;
 @Table(name = "promo")
 public class Promo {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ticket_type_id_gen")
-    @SequenceGenerator(name = "ticket_type_id_gen", sequenceName = "ticket_type_id_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "promo_id_gen")
+    @SequenceGenerator(name = "promo_id_gen", sequenceName = "promo_id_seq", allocationSize = 1)
     private Long id;
 
     @Column(name = "name")
@@ -39,12 +41,21 @@ public class Promo {
     @Column(name = "end_valid")
     private LocalDateTime endValid;
 
-//    @ManyToMany(mappedBy = "promos")
-//    private List<Users> users = new ArrayList<>();
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "event_id", referencedColumnName = "id")
     private Events event;
+
+    @Column(name = "promo_code", unique = true)
+    private String promoCode;
+
+    @Column(name = "usage_count")
+    private Integer usageCount = 0;
+
+    @OneToMany(mappedBy = "promo")
+    private List<PromoUsage> promoUsages = new ArrayList<>();
+
+    @OneToMany(mappedBy = "appliedPromo")
+    private List<OrderItem> appliedOrderItems = new ArrayList<>();
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "created_at", updatable = false)
@@ -67,6 +78,16 @@ public class Promo {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+
+    public boolean isAvailable() {
+        return usageCount < quantity
+                && LocalDateTime.now().isAfter(startValid)
+                && LocalDateTime.now().isBefore(endValid);
+    }
+
+    public void incrementUsageCount() {
+        this.usageCount++;
     }
 
 }

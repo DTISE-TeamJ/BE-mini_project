@@ -6,6 +6,7 @@ import com.example.BE_mini_project.events.dto.EventsDTO;
 import com.example.BE_mini_project.events.model.Events;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.stream.Collectors;
 
 @Component
@@ -33,6 +34,9 @@ public class EventMapper {
         dto.setOrganization(event.getOrganization());
         dto.setLocation(event.getLocation());
         dto.setDescription(event.getDescription());
+        dto.setCreatedAt(event.getCreatedAt());
+        dto.setUpdatedAt(event.getUpdatedAt());
+        dto.setDeletedAt(event.getDeletedAt());
 
         if (event.getEventCategory() != null) {
             dto.setEventCategory(new EventCategoryDTO(event.getEventCategory()));
@@ -42,13 +46,16 @@ public class EventMapper {
             dto.setUser(new UserDTO(event.getUser()));
         }
 
-        dto.setTicketTypes(event.getTicketTypes().stream()
-                .map(ticketTypeMapper::toDTO)
-                .collect(Collectors.toList()));
+        dto.setTicketTypes(event.getTicketTypes() == null ? Collections.emptyList() :
+                event.getTicketTypes().stream()
+                        .map(ticketTypeMapper::toDTO)
+                        .collect(Collectors.toList()));
 
-        dto.setPromos(event.getPromos().stream()
-                .map(promoMapper::toDTO)
-                .collect(Collectors.toList()));
+        dto.setPromos(event.getPromos() == null ? Collections.emptyList() :
+                event.getPromos().stream()
+                        .map(promoMapper::toDTO)
+                        .collect(Collectors.toList()));
 
         return dto;
-    }}
+    }
+}

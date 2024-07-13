@@ -50,13 +50,6 @@ public class Events {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
-//    @ManyToMany
-//    @JoinTable(
-//            name = "user_event_promos",
-//            joinColumns = @JoinColumn(name = "event_id"),
-//            inverseJoinColumns = @JoinColumn(name = "promo_id")
-//    )
-
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Promo> promos = new ArrayList<>();
 

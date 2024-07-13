@@ -1,9 +1,7 @@
 package com.example.BE_mini_project.events.mapper;
 
 import com.example.BE_mini_project.events.dto.PromoDTO;
-import com.example.BE_mini_project.events.dto.TicketTypeDTO;
 import com.example.BE_mini_project.events.model.Promo;
-import com.example.BE_mini_project.events.model.TicketType;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -15,8 +13,10 @@ public class PromoMapper {
         PromoDTO dto = new PromoDTO();
         dto.setName(promo.getName());
         dto.setPromoType(promo.getPromoType());
+        dto.setPromoTypeDisplayName(promo.getPromoType() != null ? promo.getPromoType().getDisplayName() : null);
         dto.setDiscount(promo.getDiscount());
         dto.setQuantity(promo.getQuantity());
+        dto.setPromoCode(promo.getPromoCode());
         dto.setStartValid(promo.getStartValid());
         dto.setEndValid(promo.getEndValid());
         return dto;

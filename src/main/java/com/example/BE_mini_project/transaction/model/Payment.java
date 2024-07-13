@@ -6,7 +6,8 @@ import lombok.Data;
 @Entity
 @Data
 @Table(name = "payment")
-public class Payment {
+public class
+Payment {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "payment_id_gen")
     @SequenceGenerator(name = "payment_id_gen", sequenceName = "payment_id_seq", allocationSize = 1)
