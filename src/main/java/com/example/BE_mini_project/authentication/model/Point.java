@@ -2,13 +2,9 @@ package com.example.BE_mini_project.authentication.model;
 
 import lombok.Data;
 import jakarta.persistence.*;
-import org.hibernate.annotations.ColumnDefault;
 
 import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 
 @Entity
 @Table(name = "point")
