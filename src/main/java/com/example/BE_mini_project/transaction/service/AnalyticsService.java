@@ -1,64 +1,53 @@
 package com.example.BE_mini_project.transaction.service;
 
-import com.example.BE_mini_project.transaction.dto.AnalyticsDTO;
-import com.example.BE_mini_project.transaction.repository.OrderItemRepository;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
+import com.example.BE_mini_project.transaction.model.OrderItem;
+import com.example.BE_mini_project.transaction.model.Orders;
+import com.example.BE_mini_project.transaction.repository.OrdersRepository;
 import org.springframework.stereotype.Service;
 
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 @Service
 public class AnalyticsService {
-    private final OrderItemRepository orderItemRepository;
-    @PersistenceContext
-    private final EntityManager entityManager;
+    private final OrdersRepository orderRepository;
 
-    public AnalyticsService(OrderItemRepository orderItemRepository, EntityManager entityManager) {
-        this.orderItemRepository = orderItemRepository;
-        this.entityManager = entityManager;
+    public AnalyticsService(OrdersRepository orderRepository) {
+        this.orderRepository = orderRepository;
     }
 
-    public List<AnalyticsDTO> getRevenue(Long eventId, LocalDateTime start, LocalDateTime end, String groupBy) {
-        String truncateFunction;
 
-        switch (groupBy.toLowerCase()) {
-            case "month":
-                truncateFunction = "DATE_TRUNC('month', o.created_at)";
-                break;
-            case "day":
-                truncateFunction = "DATE_TRUNC('day', o.created_at)";
-                break;
-            case "hour":
-                truncateFunction = "DATE_TRUNC('hour', o.created_at)";
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid groupBy parameter");
+    public Map<String, Double> calculateRevenueForCreator(Long userId, LocalDateTime startDate, LocalDateTime endDate, String interval) {
+        List<Orders> paidOrders = orderRepository.findPaidOrdersForCreatorBetweenDates(userId, startDate, endDate);
+
+        Map<String, Double> revenue = new TreeMap<>();
+
+        for (Orders order : paidOrders) {
+            for (OrderItem item : order.getOrderItems()) {
+                Double itemRevenue = item.getDiscountedPrice() * item.getQuantity();
+                updateRevenue(revenue, interval, order.getPaidAt(), itemRevenue);
+            }
         }
 
-        String query = "SELECT " + truncateFunction + " as date_time, SUM(oi.discounted_price) as revenue " +
-                "FROM orders o " +
-                "JOIN order_items oi ON o.id = oi.order_id " +
-                "WHERE oi.event_id = :eventId " +
-                "AND o.created_at BETWEEN :start AND :end " +
-                "GROUP BY " + truncateFunction + " " +
-                "ORDER BY " + truncateFunction;
+        return revenue;
+    }
 
-        @SuppressWarnings("unchecked")
-        List<Object[]> results = entityManager.createNativeQuery(query)
-                .setParameter("eventId", eventId)
-                .setParameter("start", start)
-                .setParameter("end", end)
-                .getResultList();
+    private void updateRevenue(Map<String, Double> revenueMap, String interval, LocalDateTime paidAt, Double revenue) {
+        String key = getTimeKey(interval, paidAt);
+        revenueMap.merge(key, revenue, Double::sum);
+    }
 
-        return results.stream()
-                .map(result -> new AnalyticsDTO(
-                        ((Timestamp) result[0]).toLocalDateTime(),
-                        ((Number) result[1]).doubleValue()
-                ))
-                .collect(Collectors.toList());
+    private String getTimeKey(String interval, LocalDateTime dateTime) {
+        switch (interval.toLowerCase()) {
+            case "monthly":
+                return dateTime.format(DateTimeFormatter.ofPattern("yyyy-MM"));
+            case "daily":
+                return dateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            case "hourly":
+                return dateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH"));
+            default:
+                throw new IllegalArgumentException("Invalid interval: " + interval);
+        }
     }
 }
