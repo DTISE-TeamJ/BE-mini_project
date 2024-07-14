@@ -91,11 +91,9 @@ public class EventService {
         return new EventsDTO(createdEvent);
     }
 
-    public List<EventsDTO> getAllEvents() {
-        List<Events> events = eventRepository.findAll();
-        return events.stream()
-                .map(EventsDTO::new)
-                .collect(Collectors.toList());
+    public Page<EventsDTO> getAllEvents(Pageable pageable) {
+        Page<Events> eventsPage = eventRepository.findAll(pageable);
+        return eventsPage.map(eventMapper::toDTO);
     }
 
     public EventsDTO getEventById(Long id) {
