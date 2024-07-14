@@ -56,10 +56,11 @@ public class EventController {
     }
 
     @GetMapping
-    public ResponseEntity<CustomResponse<List<EventsDTO>>> getAllEvents() {
-        List<EventsDTO> eventDTOs = eventService.getAllEvents();
+    public ResponseEntity<CustomResponse<Page<EventsDTO>>> getAllEvents(
+            @PageableDefault(size = 20, sort = {}) Pageable pageable) {
+        Page<EventsDTO> eventDTOs = eventService.getAllEvents(pageable);
 
-        CustomResponse<List<EventsDTO>> customResponse = new CustomResponse<>(
+        CustomResponse<Page<EventsDTO>> customResponse = new CustomResponse<>(
                 HttpStatus.OK,
                 "Success",
                 "Events retrieved successfully",
@@ -126,7 +127,7 @@ public class EventController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
             @RequestParam(required = false) Double minPrice,
             @RequestParam(required = false) Double maxPrice,
-            @PageableDefault(size = 20, sort = "startDate") Pageable pageable) {
+            @PageableDefault(size = 20, sort = {}) Pageable pageable) {
 
         Page<EventsDTO> events = eventService.searchEvents(keyword, categoryName, location,
                 startDate, endDate, minPrice, maxPrice,
