@@ -22,10 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -226,4 +223,12 @@ public class EventService {
                 .max()
                 .orElse(0.0);
     }
+
+    public Map<String, List<String>> getDistinctCategoriesAndLocations() {
+        Map<String, List<String>> result = new HashMap<>();
+        result.put("categories", eventCategoryRepository.findAllCategoryNames());
+        result.put("locations", eventRepository.findDistinctLocations());
+        return result;
+    }
+
 }
