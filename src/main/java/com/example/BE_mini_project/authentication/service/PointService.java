@@ -42,4 +42,9 @@ public class PointService {
         pointRepository.saveAll(updatedPoints);
         return new PaymentResult(pointsUsed, amount - remainingAmount);
     }
+
+    public Integer sumPointsByUserId(Long userId) {
+        return pointRepository.sumPointsByUserId(userId);
+    }
+
 }
