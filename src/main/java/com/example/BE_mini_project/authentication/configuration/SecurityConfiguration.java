@@ -91,6 +91,9 @@ public class SecurityConfiguration {
                     auth.requestMatchers("/api/v1/orders/remove-promo/**").hasRole("USER");
                     auth.requestMatchers("/api/v1/orders/**").hasAnyRole("ADMIN", "USER");
                     auth.requestMatchers("/api/v1/analytics/**").hasRole("ADMIN");
+                    auth.requestMatchers("/api/v1/reviews/create/**").hasRole("USER");
+                    auth.requestMatchers("/api/v1/reviews/delete/**").hasRole("USER");
+                    auth.requestMatchers("/api/v1/reviews/**").permitAll();
 
                     auth.anyRequest().authenticated();
                 })

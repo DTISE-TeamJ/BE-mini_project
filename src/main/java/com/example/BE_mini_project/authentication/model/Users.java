@@ -1,5 +1,6 @@
 package com.example.BE_mini_project.authentication.model;
 
+import com.example.BE_mini_project.events.model.Review;
 import com.example.BE_mini_project.transaction.model.PromoUsage;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -68,6 +69,10 @@ public class Users implements UserDetails {
     @JsonIgnore
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<PromoUsage> promoUsages = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Review> reviews = new ArrayList<>();
 
     public Users() {
         super();
