@@ -24,4 +24,10 @@ public interface OrdersRepository extends JpaRepository<Orders, Long> {
     List<Orders> findPaidOrdersForCreatorBetweenDates(@Param("userId") Long userId,
                                                       @Param("startDate") LocalDateTime startDate,
                                                       @Param("endDate") LocalDateTime endDate);
+
+    @Query("SELECT CASE WHEN COUNT(o) > 0 THEN true ELSE false END FROM Orders o " +
+            "JOIN o.orderItems oi " +
+            "JOIN oi.ticketType tt " +
+            "WHERE o.user.id = :userId AND tt.event.id = :eventId AND o.isPaid = true")
+    boolean existsByUserIdAndEventId(@Param("userId") Long userId, @Param("eventId") Long eventId);
 }

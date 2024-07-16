@@ -25,21 +25,21 @@ import java.security.SecureRandom;
 @Transactional
 public class AuthenticationService {
 
-    private UsersRepository usersRepository;
+    private final UsersRepository usersRepository;
 
-    private RolesRepository rolesRepository;
+    private final RolesRepository rolesRepository;
 
-    private PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
-    private AuthenticationManager authenticationManager;
+    private final AuthenticationManager authenticationManager;
 
-    private TokenService tokenService;
+    private final TokenService tokenService;
 
-    private AuthRedisRepository authRedisRepository;
+    private final AuthRedisRepository authRedisRepository;
 
-    private PointRepository pointRepository;
+    private final PointRepository pointRepository;
 
-    private DiscountRepository discountRepository;
+    private final DiscountRepository discountRepository;
 
 
     public AuthenticationService(UsersRepository usersRepository, RolesRepository rolesRepository,
