@@ -21,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/events")
@@ -144,6 +145,20 @@ public class EventController {
                 events
         );
         return customResponse.toResponseEntity();
+    }
+
+    @GetMapping("/metadata")
+    public ResponseEntity<CustomResponse<Map<String, List<String>>>> getMetadata() {
+        Map<String, List<String>> categoriesAndLocations = eventService.getDistinctCategoriesAndLocations();
+
+        CustomResponse<Map<String, List<String>>> response = new CustomResponse<>(
+                HttpStatus.OK,
+                "Success",
+                "Retrieved metadata",
+                categoriesAndLocations
+        );
+
+        return response.toResponseEntity();
     }
 
 }
