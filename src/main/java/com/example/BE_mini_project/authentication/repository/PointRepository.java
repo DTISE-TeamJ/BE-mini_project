@@ -20,4 +20,7 @@ public interface PointRepository extends JpaRepository<Point, Long> {
     @Transactional
     @Query("UPDATE Point p SET p.points = 0 WHERE p.expiredAt <= :now")
     void updateExpiredPoints(@Param("now") LocalDateTime now);
+
+    @Query("SELECT COALESCE(SUM(p.points), 0) FROM Point p WHERE p.inviter.id = :userId")
+    Integer sumPointsByUserId(@Param("userId") Long userId);
 }
