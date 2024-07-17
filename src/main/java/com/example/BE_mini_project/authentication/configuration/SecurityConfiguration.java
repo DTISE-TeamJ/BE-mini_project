@@ -144,6 +144,7 @@ public class SecurityConfiguration {
 
     @Bean
     public JwtDecoder jwtDecoder() {
+//        test redeployment
 //        return NimbusJwtDecoder.withPublicKey(keys.getPublicKey()).build();
         return NimbusJwtDecoder.withPublicKey(rsaKeyConfigProperties.publicKey()).build();
     }
