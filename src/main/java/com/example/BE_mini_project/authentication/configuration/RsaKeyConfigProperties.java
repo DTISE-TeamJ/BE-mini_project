@@ -1,3 +1,4 @@
+/*
 package com.example.BE_mini_project.authentication.configuration;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -9,3 +10,4 @@ import java.security.interfaces.RSAPublicKey;
 public record RsaKeyConfigProperties(RSAPublicKey publicKey, RSAPrivateKey privateKey) {
 
 }
+*/
