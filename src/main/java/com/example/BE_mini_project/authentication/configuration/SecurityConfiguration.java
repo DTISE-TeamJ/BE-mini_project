@@ -41,12 +41,13 @@ import java.util.Arrays;
 @Configuration
 public class SecurityConfiguration {
     private final RSAKeyProperties keys;
-
+    private final RsaKeyConfigProperties rsaKeyConfigProperties;
     private final BlacklistAuthRedisRepository blacklistAuthRedisRepository;
 
-    public SecurityConfiguration(RSAKeyProperties keys, BlacklistAuthRedisRepository blacklistAuthRedisRepository){
+    public SecurityConfiguration(RSAKeyProperties keys, BlacklistAuthRedisRepository blacklistAuthRedisRepository, RsaKeyConfigProperties rsaKeyConfigProperties){
         this.blacklistAuthRedisRepository = blacklistAuthRedisRepository;
         this.keys = keys;
+        this.rsaKeyConfigProperties = rsaKeyConfigProperties;
     }
 
     @Bean
@@ -143,7 +144,8 @@ public class SecurityConfiguration {
 
     @Bean
     public JwtDecoder jwtDecoder() {
-        return NimbusJwtDecoder.withPublicKey(keys.getPublicKey()).build();
+//        return NimbusJwtDecoder.withPublicKey(keys.getPublicKey()).build();
+        return NimbusJwtDecoder.withPublicKey(rsaKeyConfigProperties.publicKey()).build();
     }
 
     @Bean
