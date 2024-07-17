@@ -9,7 +9,6 @@ import java.time.LocalDateTime;
 
 @Component
 public class ExpiryTask {
-    // Adding this line only for dummy redeployment
     private final DiscountRepository discountRepository;
     private final PointRepository pointRepository;
 
