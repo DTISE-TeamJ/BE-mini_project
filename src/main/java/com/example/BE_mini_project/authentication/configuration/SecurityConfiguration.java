@@ -95,6 +95,7 @@ public class SecurityConfiguration {
                     auth.requestMatchers("/api/v1/reviews/create/**").hasRole("USER");
                     auth.requestMatchers("/api/v1/reviews/delete/**").hasRole("USER");
                     auth.requestMatchers("/api/v1/reviews/**").permitAll();
+                    auth.requestMatchers("/api/v1/event-categories/**").permitAll();
 
                     auth.anyRequest().authenticated();
                 })

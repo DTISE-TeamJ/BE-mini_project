@@ -4,7 +4,9 @@ import com.example.BE_mini_project.authentication.model.Users;
 import com.example.BE_mini_project.events.dto.CreateReviewDTO;
 import com.example.BE_mini_project.events.model.Events;
 import com.example.BE_mini_project.events.model.Review;
+import org.springframework.stereotype.Component;
 
+@Component
 public class ReviewMapper {
 
     public static Review createReviewDTOToReview(CreateReviewDTO dto, Users user, Events event) {
