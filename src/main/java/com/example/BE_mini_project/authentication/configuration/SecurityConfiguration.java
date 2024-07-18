@@ -1,10 +1,12 @@
 package com.example.BE_mini_project.authentication.configuration;
 
+import com.example.BE_mini_project.authentication.util.PemUtils;
 import jakarta.servlet.http.Cookie;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.Resource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -35,6 +37,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.security.interfaces.RSAPublicKey;
 import java.util.Arrays;
 
 @Log
@@ -44,10 +47,13 @@ public class SecurityConfiguration {
 //    private final RsaKeyConfigProperties rsaKeyConfigProperties;
     private final BlacklistAuthRedisRepository blacklistAuthRedisRepository;
 
-    public SecurityConfiguration(RSAKeyProperties keys, BlacklistAuthRedisRepository blacklistAuthRedisRepository){
+    private final RsaKeyConfigProperties rsaKeyConfigProperties;
+
+
+    public SecurityConfiguration(RSAKeyProperties keys, BlacklistAuthRedisRepository blacklistAuthRedisRepository, RsaKeyConfigProperties rsaKeyConfigProperties){
         this.blacklistAuthRedisRepository = blacklistAuthRedisRepository;
         this.keys = keys;
-//        this.rsaKeyConfigProperties = rsaKeyConfigProperties;
+        this.rsaKeyConfigProperties = rsaKeyConfigProperties;
     }
 
     @Bean
@@ -102,7 +108,11 @@ public class SecurityConfiguration {
                 .oauth2ResourceServer((oauth2) -> {
                     oauth2.jwt(jwt -> {
                         jwt.jwtAuthenticationConverter(jwtAuthenticationConverter());
-                        jwt.decoder(jwtDecoder());
+                        try {
+                            jwt.decoder(jwtDecoder());
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
                     });
                     oauth2.bearerTokenResolver((request) -> {
                         Cookie[] cookies = request.getCookies();
@@ -133,7 +143,7 @@ public class SecurityConfiguration {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000")); // Add your frontend origin here
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "https://be-mini-project-336lwdxfja-et.a.run.app")); // Add your frontend origin here
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type"));
         configuration.setAllowCredentials(true);
@@ -143,10 +153,9 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    public JwtDecoder jwtDecoder() {
-//        test redeployment
-        return NimbusJwtDecoder.withPublicKey(keys.getPublicKey()).build();
-//        return NimbusJwtDecoder.withPublicKey(rsaKeyConfigProperties.publicKey()).build();
+    public JwtDecoder jwtDecoder() throws Exception {
+        return NimbusJwtDecoder.withPublicKey(rsaKeyConfigProperties.getPublicKey()).build();
+
     }
 
     @Bean
