@@ -1,3 +1,4 @@
+/*
 package com.example.BE_mini_project.authentication.util;
 
 import lombok.Getter;
@@ -22,8 +23,8 @@ public class RSAKeyProperties {
         this.privateKey = (RSAPrivateKey) pair.getPrivate();
     }
 }
+*/
 
-/*
 package com.example.BE_mini_project.authentication.util;
 
 import java.security.interfaces.RSAPrivateKey;
@@ -36,7 +37,7 @@ import java.io.*;
 import java.security.*;
 import java.security.spec.*;
 import java.util.Base64;
-import com.example.BE_mini_project.authentication.configuration.RsaKeyConfigProperties;
+//import com.example.BE_mini_project.authentication.configuration.RsaKeyConfigProperties;
 
 @Log
 @Component
@@ -48,11 +49,11 @@ public class RSAKeyProperties {
     private RSAPublicKey publicKey;
     private RSAPrivateKey privateKey;
 
-    private RsaKeyConfigProperties rsaKeyConfigProperties;
-
-    public RSAKeyProperties(RsaKeyConfigProperties rsaKeyConfigProperties) {
-        this.rsaKeyConfigProperties = rsaKeyConfigProperties;
-    }
+//    private RsaKeyConfigProperties rsaKeyConfigProperties;
+//
+//    public RSAKeyProperties(RsaKeyConfigProperties rsaKeyConfigProperties) {
+//        this.rsaKeyConfigProperties = rsaKeyConfigProperties;
+//    }
 
 
 
@@ -65,10 +66,10 @@ public class RSAKeyProperties {
                 generateAndSaveKeys();
             }
 
-            // Verify that keys are not null
-            if (rsaKeyConfigProperties.getPublicKey() == null || rsaKeyConfigProperties.getPrivateKey() == null) {
-                throw new IllegalStateException("RSA keys are null after initialization");
-            }
+//            // Verify that keys are not null
+//            if (rsaKeyConfigProperties.getPublicKey() == null || rsaKeyConfigProperties.getPrivateKey() == null) {
+//                throw new IllegalStateException("RSA keys are null after initialization");
+//            }
         } catch (Exception e) {
             log.severe("Failed to initialize RSA keys: " + e.getMessage());
             throw new RuntimeException("Failed to initialize RSA keys", e);
@@ -80,35 +81,35 @@ public class RSAKeyProperties {
         return publicKeyFile.exists() && privateKeyFile.exists();
     }
 
-//    private void loadKeys() throws Exception {
-//        this.publicKey = (RSAPublicKey) loadKey(PUBLIC_KEY_FILE, true);
-//        this.privateKey = (RSAPrivateKey) loadKey(PRIVATE_KEY_FILE, false);
-//        log.info("RSA keys loaded from files.");
-//    }
-//
-//    private void generateAndSaveKeys() throws Exception {
-//        KeyPair pair = KeyGeneratorUtility.generateRsaKey();
-//        this.publicKey = (RSAPublicKey) pair.getPublic();
-//        this.privateKey = (RSAPrivateKey) pair.getPrivate();
-//        saveKey(this.publicKey, PUBLIC_KEY_FILE);
-//        saveKey(this.privateKey, PRIVATE_KEY_FILE);
-//        log.info("RSA keys generated and saved to files.");
-//    }
-
     private void loadKeys() throws Exception {
-        rsaKeyConfigProperties.setPublicKey((RSAPublicKey) loadKey(PUBLIC_KEY_FILE, true));
-        rsaKeyConfigProperties.setPrivateKey((RSAPrivateKey) loadKey(PRIVATE_KEY_FILE, false));
+        this.publicKey = (RSAPublicKey) loadKey(PUBLIC_KEY_FILE, true);
+        this.privateKey = (RSAPrivateKey) loadKey(PRIVATE_KEY_FILE, false);
         log.info("RSA keys loaded from files.");
     }
 
     private void generateAndSaveKeys() throws Exception {
         KeyPair pair = KeyGeneratorUtility.generateRsaKey();
-        rsaKeyConfigProperties.setPublicKey((RSAPublicKey) pair.getPublic());
-        rsaKeyConfigProperties.setPrivateKey((RSAPrivateKey) pair.getPrivate());
-        saveKey(rsaKeyConfigProperties.getPublicKey(), PUBLIC_KEY_FILE);
-        saveKey(rsaKeyConfigProperties.getPrivateKey(), PRIVATE_KEY_FILE);
+        this.publicKey = (RSAPublicKey) pair.getPublic();
+        this.privateKey = (RSAPrivateKey) pair.getPrivate();
+        saveKey(this.publicKey, PUBLIC_KEY_FILE);
+        saveKey(this.privateKey, PRIVATE_KEY_FILE);
         log.info("RSA keys generated and saved to files.");
     }
+
+//    private void loadKeys() throws Exception {
+//        rsaKeyConfigProperties.setPublicKey((RSAPublicKey) loadKey(PUBLIC_KEY_FILE, true));
+//        rsaKeyConfigProperties.setPrivateKey((RSAPrivateKey) loadKey(PRIVATE_KEY_FILE, false));
+//        log.info("RSA keys loaded from files.");
+//    }
+//
+//    private void generateAndSaveKeys() throws Exception {
+//        KeyPair pair = KeyGeneratorUtility.generateRsaKey();
+//        rsaKeyConfigProperties.setPublicKey((RSAPublicKey) pair.getPublic());
+//        rsaKeyConfigProperties.setPrivateKey((RSAPrivateKey) pair.getPrivate());
+//        saveKey(rsaKeyConfigProperties.getPublicKey(), PUBLIC_KEY_FILE);
+//        saveKey(rsaKeyConfigProperties.getPrivateKey(), PRIVATE_KEY_FILE);
+//        log.info("RSA keys generated and saved to files.");
+//    }
     private void saveKey(Key key, String fileName) throws IOException {
         byte[] keyBytes = key.getEncoded();
         String keyString = Base64.getEncoder().encodeToString(keyBytes);
@@ -159,4 +160,3 @@ public class RSAKeyProperties {
         this.privateKey = privateKey;
     }
 }
-*/

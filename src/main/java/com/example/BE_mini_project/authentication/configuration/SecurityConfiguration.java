@@ -47,13 +47,15 @@ public class SecurityConfiguration {
 //    private final RsaKeyConfigProperties rsaKeyConfigProperties;
     private final BlacklistAuthRedisRepository blacklistAuthRedisRepository;
 
-    private final RsaKeyConfigProperties rsaKeyConfigProperties;
+//    private final RsaKeyConfigProperties rsaKeyConfigProperties;
 
 
-    public SecurityConfiguration(RSAKeyProperties keys, BlacklistAuthRedisRepository blacklistAuthRedisRepository, RsaKeyConfigProperties rsaKeyConfigProperties){
+    public SecurityConfiguration(RSAKeyProperties keys, BlacklistAuthRedisRepository blacklistAuthRedisRepository
+//                                 RsaKeyConfigProperties rsaKeyConfigProperties
+    ){
         this.blacklistAuthRedisRepository = blacklistAuthRedisRepository;
         this.keys = keys;
-        this.rsaKeyConfigProperties = rsaKeyConfigProperties;
+//        this.rsaKeyConfigProperties = rsaKeyConfigProperties;
     }
 
     @Bean
@@ -154,7 +156,9 @@ public class SecurityConfiguration {
 
     @Bean
     public JwtDecoder jwtDecoder() throws Exception {
-        return NimbusJwtDecoder.withPublicKey(rsaKeyConfigProperties.getPublicKey()).build();
+        return NimbusJwtDecoder.withPublicKey(keys.getPublicKey()).build();
+
+//        return NimbusJwtDecoder.withPublicKey(rsaKeyConfigProperties.getPublicKey()).build();
 
     }
 

@@ -1,3 +1,4 @@
+/*
 package com.example.BE_mini_project.authentication.configuration;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -29,6 +30,7 @@ public class RsaKeyConfigProperties {
         this.privateKey = privateKey;
     }
 }
+*/
 
 /*
 package com.example.BE_mini_project.authentication.configuration;
