@@ -231,4 +231,11 @@ public class EventService {
         return result;
     }
 
+    public List<EventsDTO> getEventsByUserId(Long userId) {
+        List<Events> userEvents = eventRepository.findByUserId(userId);
+        return userEvents.stream()
+                .map(EventsDTO::new)
+                .collect(Collectors.toList());
+    }
+
 }

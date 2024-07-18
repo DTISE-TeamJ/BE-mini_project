@@ -14,4 +14,7 @@ public interface EventRepository extends JpaRepository<Events, Long>, JpaSpecifi
     @Query("SELECT DISTINCT e.location FROM Events e")
     List<String> findDistinctLocations();
 
+    List<Events> findByUserId(Long userId);
+
+
 }
